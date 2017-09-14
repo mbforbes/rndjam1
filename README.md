@@ -39,3 +39,13 @@ last 10k off of train for a val set. My final splits are then 50k/10k/10k
 train/val/test.
 
 [mnist-csv]: https://pjreddie.com/projects/mnist-in-csv/
+
+## Viewing an image
+
+Here's an MNIST image:
+
+![the first mnist datum](images/example_normal.jpg)
+
+Here it is expanded 10x:
+
+![the first mnist datum, expanded](images/example_bloated.jpg)

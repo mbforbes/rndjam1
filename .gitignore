@@ -1,0 +1,6 @@
+# data be here
+data/
+
+# useful for me, but I guess you don't check these in # instructions are in the
+# README.md for which python to use
+.python-version

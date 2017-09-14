@@ -1,4 +1,4 @@
 #!/bin/bash
-mkdir data/
-curl https://pjreddie.com/media/files/mnist_train.csv > data/mnist_train.csv
-curl https://pjreddie.com/media/files/mnist_test.csv > data/mnist_test.csv
+mkdir -p data/original/
+curl https://pjreddie.com/media/files/mnist_train.csv > data/original/mnist_train.csv
+curl https://pjreddie.com/media/files/mnist_test.csv > data/original/mnist_test.csv

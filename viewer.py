@@ -8,10 +8,12 @@ import csv
 import torch
 import visdom
 
+# local
+import constants
 
 # settings
-train_unnorm = 'data/processed/resplit/mnist_train.csv'
-visdom_env = 'rndj1'
+constants.TRAIN_UNNORM = 'data/processed/resplit/mnist_train.csv'
+constants.VISDOM_ENV = 'rndj1'
 
 # globals
 vis = visdom.Visdom()
@@ -49,7 +51,7 @@ def view_train_datum(n: int = 0):
     """
     # read the desired row from the csv
     img_list = None
-    with open(train_unnorm, 'r') as f:
+    with open(constants.TRAIN_UNNORM, 'r') as f:
         for i, row in enumerate(csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)):
             if i == n:
                 img_list = row
@@ -70,7 +72,7 @@ def view_train_datum(n: int = 0):
     img_vector = torch.Tensor(img_list[1:])
     img_matrix = img_vector.view(28, 28)
     img_tensor = img_matrix.unsqueeze(0)
-    vis.image(img_tensor, win='demo image', env=visdom_env, opts={
+    vis.image(img_tensor, win='demo image', env=constants.VISDOM_ENV, opts={
             'caption': 'this should be a {}'.format(label),
     })
 
@@ -79,13 +81,13 @@ def view_train_datum(n: int = 0):
 
     # view it bigger
     bigger = scale(img_matrix, 10).unsqueeze(0)
-    vis.image(bigger, win='demo image expanded', env=visdom_env, opts={
+    vis.image(bigger, win='demo image expanded', env=constants.VISDOM_ENV, opts={
             'caption': 'this should be a bigger {}'.format(label),
     })
 
 
 def main():
-    view_train_datum()
+    view_train_datum(0)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@
 
 python3. Setup:
 
-```
+```bash
 # pyenv wraps virtualenv to let you pick a python version. global namespace.
 pyenv virtualenv 3.6.2 rndj1
 pyenv local rndj1

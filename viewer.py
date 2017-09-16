@@ -1,4 +1,9 @@
+"""
+For looking at data. Currently using 'visdom' web dashboard.
+"""
+
 # imports
+# ---
 
 # builtins
 import code
@@ -11,14 +16,14 @@ import visdom
 # local
 import constants
 
-# settings
-constants.TRAIN_UNNORM = 'data/processed/resplit/mnist_train.csv'
-constants.VISDOM_ENV = 'rndj1'
 
 # globals
+# ---
 vis = visdom.Visdom()
 
+
 # code
+# ---
 
 def scale(orig: torch.Tensor, scale: int) -> torch.Tensor:
     """
@@ -51,7 +56,7 @@ def view_train_datum(n: int = 0):
     """
     # read the desired row from the csv
     img_list = None
-    with open(constants.TRAIN_UNNORM, 'r') as f:
+    with open(constants.TRAIN_RESPLIT, 'r') as f:
         for i, row in enumerate(csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)):
             if i == n:
                 img_list = row
@@ -81,9 +86,11 @@ def view_train_datum(n: int = 0):
 
     # view it bigger
     bigger = scale(img_matrix, 10).unsqueeze(0)
-    vis.image(bigger, win='demo image expanded', env=constants.VISDOM_ENV, opts={
+    vis.image(
+        bigger, win='demo image expanded', env=constants.VISDOM_ENV, opts={
             'caption': 'this should be a bigger {}'.format(label),
-    })
+        }
+    )
 
 
 def main():

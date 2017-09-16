@@ -4,3 +4,6 @@ data/
 # useful for me, but I guess you don't check these in # instructions are in the
 # README.md for which python to use
 .python-version
+
+# Come on mypy, go play in some config directory like everybody else
+.mypy_cache/

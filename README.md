@@ -1,8 +1,10 @@
 # R&Djam1
 
+
 ## Goal
 
 **Build** linear and logistic regression for MNIST from scratch using pytorch.
+
 
 ## Running
 
@@ -35,13 +37,17 @@ pip install prospector
 python normalization.py
 ```
 
+
 ## Data splits
 
-MNIST ([csv version][mnist-csv]) has a 60k/10k train/test split. I pulled the
-last 10k off of train for a val set. My final splits are then 50k/10k/10k
-train/val/test.
+MNIST ([csv version][mnist-csv]) has a 60k/10k train/test split.
+
+I pulled the last 10k off of train for a val set.
+
+My final splits are then 50k/10k/10k train/val/test.
 
 [mnist-csv]: https://pjreddie.com/projects/mnist-in-csv/
+
 
 ## Viewing an image
 

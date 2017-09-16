@@ -17,6 +17,7 @@ import torch
 
 # local
 import constants
+import dataio
 
 # constants
 # ---
@@ -28,38 +29,6 @@ CHECK_EPSILON = 1e-5
 
 # lib functions
 # ---
-
-# TODO: pull these ones out into a data lib probably
-
-def csv_to_tensor(filename: str) -> torch.Tensor:
-    """
-    Loads all data in a single tensor.
-    """
-    with open(filename, 'r') as f:
-        rows = [r for r in csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)]
-    return torch.Tensor(rows)
-
-
-def csv_to_tensors(
-        filename: str) -> Tuple[torch.LongTensor, torch.FloatTensor]:
-    """
-    Loads data and splits into label and features tensors.
-    """
-    data = csv_to_tensor(filename)
-
-    # split off labels and features
-    labels = data[:, 0].type(torch.IntTensor)
-    features = data[:, 1:]
-
-    return labels, features
-
-
-def tensor_to_csv(t: torch.Tensor, filename: str) -> None:
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, 'w') as f:
-        w = csv.writer(f)
-        w.writerows(t)
-
 
 def normalize(
         features: torch.FloatTensor, means: torch.FloatTensor,
@@ -119,10 +88,6 @@ def normalize(
 # script functions
 # ---
 
-def which_exist(filenames: List[str]) -> List[str]:
-    return list(filter(lambda f: os.path.exists(f), filenames))
-
-
 def normalize_and_save(
         labels: torch.Tensor, features: torch.Tensor, out_fn: str,
         means: torch.Tensor, stds: torch.Tensor,
@@ -134,14 +99,15 @@ def normalize_and_save(
     result = torch.Tensor(norm.size()[0], norm.size()[1] + 1)
     result[:, 0] = labels
     result[:, 1:] = norm
-    tensor_to_csv(result, out_fn)
+    dataio.tensor_to_csv(result, out_fn)
 
 
 def normalize_data(
         train: Tuple[str, str], worklist: List[Tuple[str, str]]) -> None:
     train_unnorm_fn, train_norm_fn = train
 
-    train_labels, train_unnorm_features = csv_to_tensors(train_unnorm_fn)
+    train_labels, train_unnorm_features = dataio.csv_to_tensors(
+        train_unnorm_fn)
 
     # now, compute per-feature mean/std. dimension is 0 because averaging
     # *along* the 0th dimension (data rows). slightly counter-intuitive because
@@ -157,7 +123,7 @@ def normalize_data(
     # normalize others (probably val and test)
     for raw_fn, norm_fn in worklist:
         normalize_and_save(
-            *csv_to_tensors(raw_fn), norm_fn, means, stds, False)
+            *dataio.csv_to_tensors(raw_fn), norm_fn, means, stds, False)
 
 
 def main() -> None:
@@ -175,7 +141,7 @@ def main() -> None:
 
     # to be the safest, we'll check if any of the normalized files exist and
     # not overwrite them if so.
-    existing = which_exist([train[1]] + [w[1] for w in worklist])
+    existing = dataio.which_exist([train[1]] + [w[1] for w in worklist])
     if len(existing) > 0:
         print('ERROR: The following normalized files already exist: {}'.format(
             existing))

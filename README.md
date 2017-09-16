@@ -30,6 +30,9 @@ pip install prospector
 
 # split data. writes to data/processed/resplit/
 ./scripts/split_data.sh
+
+# normalize data. writes to data/processed/normalized
+python normalization.py
 ```
 
 ## Data splits

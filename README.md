@@ -44,6 +44,9 @@ python normalization.py
 
 # convert data from csv to tensor (faster). writes to data/processed/tensor/
 python dataio.py --convert
+
+# add a bias colum
+python dataio.py --bias
 ```
 
 

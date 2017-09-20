@@ -11,6 +11,7 @@ might want to change.
 # - (2) resplit    (pulled off some of train for val)
 # - (3) normalized (zero mean, unit variance per feature)
 # - (4) tensor     (using torch.save(...) instead of a CSV format)
+# - (5) bias       (adding bias column)
 
 # filenames
 TRAIN_RESPLIT = 'data/processed/resplit/mnist_train.csv'
@@ -24,6 +25,10 @@ TEST_NORM = 'data/processed/normalized/mnist_test.csv'
 TRAIN_TENSOR = 'data/processed/tensor/mnist_train.tensor'
 VAL_TENSOR = 'data/processed/tensor/mnist_val.tensor'
 TEST_TENSOR = 'data/processed/tensor/mnist_test.tensor'
+
+TRAIN_BIAS = 'data/processed/bias/mnist_train.tensor'
+VAL_BIAS = 'data/processed/bias/mnist_val.tensor'
+TEST_BIAS = 'data/processed/bias/mnist_test.tensor'
 
 
 # visdom

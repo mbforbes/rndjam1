@@ -31,9 +31,18 @@ def which_exist(filenames: List[str]) -> List[str]:
     return list(filter(lambda f: os.path.exists(f), filenames))
 
 
+def split_tensor(data: torch.Tensor) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+    """
+    Splits 'all data' tensor into labels and features tensors.
+    """
+    labels = data[:, 0].type(torch.IntTensor)
+    features = data[:, 1:]
+    return labels, features
+
+
 def csv_to_tensor(filename: str) -> torch.Tensor:
     """
-    Loads all data from filename; returns in a single tensor.
+    Loads all data from filename in csv format; returns in a single tensor.
     """
     with open(filename, 'r') as f:
         rows = [r for r in csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)]
@@ -41,17 +50,12 @@ def csv_to_tensor(filename: str) -> torch.Tensor:
 
 
 def csv_to_tensors(
-        filename: str) -> Tuple[torch.LongTensor, torch.FloatTensor]:
+        filename: str) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
-    Loads data from filename; return label (col 0) and features (rest) tensors.
+    Loads data from filename in csv format; return label (col 0) and features
+    (rest) tensors.
     """
-    data = csv_to_tensor(filename)
-
-    # split off labels and features
-    labels = data[:, 0].type(torch.IntTensor)
-    features = data[:, 1:]
-
-    return labels, features
+    return split_tensor(csv_to_tensor(filename))
 
 
 def tensor_to_csv(t: torch.Tensor, filename: str) -> None:
@@ -78,6 +82,33 @@ def bin_to_tensor(filename: str) -> torch.Tensor:
     Loads tensor from disk at filename in torch.save(...) format.
     """
     return torch.load(filename)
+
+
+def bin_to_tensors(filename: str) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+    """
+    Loads data from filename in torch.save(...) format; return label (col 0)
+    and features (rest) tensors.
+
+    Retuns:
+        label    1D (N) tensor
+        features 2D (N x D) tensor
+    """
+    return split_tensor(bin_to_tensor(filename))
+
+
+def bias_tensor(t: torch.Tensor) -> torch.Tensor:
+    """
+    Adds bias column (all 1s) to `t`.
+
+    Arguments:
+        t 2D (N x D) tensor
+
+    Retuns:
+          2D (N x D+1) tensor, with final bias column (all 1s)
+    """
+    n = len(t)
+    bias_col = torch.ones(n)
+    return torch.cat([t, bias_col], dim=1)
 
 
 # script
@@ -126,8 +157,33 @@ def convert() -> None:
     print('dataio.convert :: start')
     for csv_fn, bin_fn in worklist:
         print('\t Converting {} to {}...'.format(csv_fn, bin_fn))
+        # This is the actual line of code that does the conversion.
         tensor_to_bin(csv_to_tensor(csv_fn), bin_fn)
     print('dataio.convert :: finish')
+
+
+def bias() -> None:
+    """
+    Adds bias term to files from this project (output from convert()).
+    """
+    worklist = [
+        (constants.TRAIN_TENSOR, constants.TRAIN_BIAS),
+        (constants.VAL_TENSOR, constants.VAL_BIAS),
+        (constants.TEST_TENSOR, constants.TEST_BIAS),
+    ]
+
+    existing = which_exist([out for inp, out in worklist])
+    if len(existing) > 0:
+        print('ERROR: Not adding bias because the following files already '
+            'exist: {}'.format(existing))
+        return
+
+    print('dataio.bias :: start')
+    for tensor_fn, bias_fn in worklist:
+        print('\t Converting {} to {}...'.format(tensor_fn, bias_fn))
+        # This is the actual line of code that does the biasing.
+        tensor_to_bin(bias_tensor(bin_to_tensor(tensor_fn)), bias_fn)
+    print('dataio.bias :: finish')
 
 
 def main() -> None:
@@ -138,11 +194,14 @@ def main() -> None:
     choice = parser.add_mutually_exclusive_group(required=True)
     choice.add_argument('--speedtest', action='store_true')
     choice.add_argument('--convert', action='store_true')
+    choice.add_argument('--bias', action='store_true')
     args = parser.parse_args()
     if args.speedtest:
         speedtest()
     if args.convert:
         convert()
+    if args.bias:
+        bias()
 
 
 if __name__ == '__main__':

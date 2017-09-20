@@ -8,6 +8,8 @@ For looking at data. Currently using 'visdom' web dashboard.
 # builtins
 import code
 import csv
+import random
+from typing import List, Dict
 
 # 3rd party
 import torch
@@ -47,6 +49,34 @@ def scale(orig: torch.Tensor, scale: int) -> torch.Tensor:
                 for new_j in range(j*scale, (j+1)*scale):
                     new[new_i, new_j] = orig[i, j]
     return new
+
+
+def jitter(mag: float = 0.1) -> float:
+    """
+    TODO: elsewhere, guess jitter amt based on data.
+    """
+    return random.uniform(-mag, mag)
+
+
+def plot_jitter(data: Dict[str, List[float]], win: str = 'my-scatter') -> None:
+    """
+    data is a map from named values to the list of their data points
+    win is the visdom window name to plot into
+    """
+    n = sum(len(v) for v in data.values())
+    t = torch.FloatTensor(n, 2)
+    idx = 0
+    keys = sorted(data.keys())
+    for x, k in enumerate(keys):
+        for y in data[k]:
+            t[idx,0] = x + jitter()
+            t[idx,1] = y
+            idx += 1
+    vis.scatter(t, win=win, env=constants.VISDOM_ENV, opts={
+        'title': win,
+        'xtickvals': list(range(len(keys))),
+        'xticklabels': keys, # {i: k for i, k in enumerate(keys)}
+    })
 
 
 def view_train_datum(n: int = 0):

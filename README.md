@@ -11,9 +11,13 @@
 python3. Setup:
 
 ```bash
+# install python 3.6.2, if needed
+pyenv versions  # check if 3.6.2 installed
+pyenv install 3.6.2  # only if needed
+
 # pyenv wraps virtualenv to let you pick a python version. global namespace.
 pyenv virtualenv 3.6.2 rndj1
-pyenv local rndj1
+pyenv local rndj1  # if .python-version doesn't exist, this places it
 
 # pytroch. (get latest from pytorch.org. this is what i used.)
 pip install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp36-cp36m-manylinux1_x86_64.whl
@@ -24,8 +28,10 @@ pip install visdom
 # visdom should already be running. if not, run with: `python -m visdom.server`
 
 # editor setup. for vscode:
-pip install prospector
-# in vs code, use command `Python: Select Workspace Interpreter` and pick rndj1
+pip install mypy
+# then in vs code:
+# (1) use command `Python: Select Workspace Interpreter` and pick rndj1
+# (2) in settings, disable pylint and prospector; enable mypy
 
 # get data. writes to data/original/
 ./scripts/get_data.sh
@@ -33,8 +39,11 @@ pip install prospector
 # split data. writes to data/processed/resplit/
 ./scripts/split_data.sh
 
-# normalize data. writes to data/processed/normalized
+# normalize data. writes to data/processed/normalized/
 python normalization.py
+
+# convert data from csv to tensor (faster). writes to data/processed/tensor/
+python dataio.py --convert
 ```
 
 
@@ -58,3 +67,11 @@ Here's an MNIST image:
 Here it is expanded 10x:
 
 ![the first mnist datum, expanded](images/example_bloated.jpg)
+
+
+## Data loading: CSV vs binary ("tensor")
+
+y-axis is seconds taken to load the file; lower is better. Result: binary is
+way faster.
+
+![data loading speeds, csv vs binary](images/data_loading.png)

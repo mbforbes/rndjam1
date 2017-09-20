@@ -42,7 +42,7 @@ def least_squares(x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor
     return w
 
 
-def evaluate(
+def regression_eval(
         w: torch.FloatTensor, x: torch.FloatTensor,
         y: torch.IntTensor) -> Tuple[float, float]:
     """
@@ -65,7 +65,7 @@ def evaluate(
 
 
 def report(method_name, w, x, y):
-    corr, l2_loss = evaluate(w, x, y)
+    corr, l2_loss = regression_eval(w, x, y)
     total = len(y)
 
     print('{} accuracy: {}/{} ({}%)'.format(

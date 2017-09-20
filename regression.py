@@ -54,7 +54,7 @@ def least_squares(x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor
     return w
 
 
-def regression_gradient(
+def regression_gradient_1loop(
         w: torch.FloatTensor, x: torch.FloatTensor,
         y: torch.FloatTensor) -> torch.FloatTensor:
     """
@@ -98,6 +98,16 @@ def regression_gradient(
     return dwdl
 
 
+def regression_gradient_0loops(
+        w: torch.FloatTensor, x: torch.FloatTensor,
+        y: torch.FloatTensor) -> torch.FloatTensor:
+    """
+    See regression_gradient_1loop(...).
+    """
+    n, d = x.size()
+    return ((x.matmul(w) - y).resize_(n, 1) * x).sum(dim=0) * 2 / n
+
+
 def gradient_descent_regression(
         x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor:
     """
@@ -110,12 +120,13 @@ def gradient_descent_regression(
     """
     # settings
     lr = 0.02
-    epochs = 200
+    epochs = 1000
 
     # setup
-    y = y.type(torch.FloatTensor)
+    x = x.cuda()
+    y = y.type(torch.cuda.FloatTensor)
     n, d = x.size()
-    w = torch.randn(d)  # initial w is drawn from gaussian(0, 1)
+    w = torch.randn(d).type(torch.cuda.FloatTensor)  # initial w is drawn from gaussian(0, 1)
 
     for epoch in range(epochs):
         # compute loss
@@ -123,7 +134,8 @@ def gradient_descent_regression(
         l2_loss = (y_hat - y).pow(2).sum()
 
         # compute gradient
-        grad = regression_gradient(w, x, y)
+        # grad = regression_gradient_1loop(w, x, y)
+        grad = regression_gradient_0loops(w, x, y)
 
         # maybe adjust lr
         # if epoch > 0 and epoch % 40 == 0:
@@ -187,5 +199,6 @@ report('least squares', w, val_x, val_y)
 
 # try gradient descent
 w = gradient_descent_regression(train_x, train_y)
+w = w.type(torch.FloatTensor)
 report('gradient descent linear regression', w, train_x, train_y)
 report('gradient descent linear regression', w, val_x, val_y)

@@ -7,3 +7,8 @@ data/
 
 # Come on mypy, go play in some config directory like everybody else
 .mypy_cache/
+
+# This allows you not to need to set the MYPYPATH environment variable before
+# running the editor, because you can put it here (mypy_path=<...>), and mypy
+# will automatically read this file when it runs.
+mypy.ini

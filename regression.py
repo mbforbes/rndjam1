@@ -23,7 +23,7 @@ import constants
 import dataio
 
 
-def least_squares(x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor:
+def least_squares(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.FloatTensor:
     """
     w = (X^T X)^-1 X^T y
 
@@ -35,7 +35,7 @@ def least_squares(x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor
         weights: 1D (D) tensor
     """
     # for regression, y becomes real values instead of labels
-    y = y.type(torch.FloatTensor)
+    y: torch.FloatTensor = y_int.type(torch.FloatTensor)
 
     # save X^T, as used twice
     x_t = x.t()
@@ -45,13 +45,13 @@ def least_squares(x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor
     # - tensor.inverse() does not work
     # - np.linalg.inv()  does not work
     # - np.linalg.pinv() works; uses SVD
-    inv = torch.from_numpy(np.linalg.pinv(x_t.matmul(x).numpy()))
+    inv: torch.FloatTensor = torch.from_numpy(np.linalg.pinv(x_t.matmul(x).numpy()))  # type: ignore
 
     # ... X^T y
     # note that matmul 2D x 2D tensors does matrix multiplication
     #           matmul 2D x 1D tensors does matrix-vector product
     w = inv.matmul(x_t).matmul(y)
-    return w
+    return w.cuda()
 
 
 def regression_gradient_1loop(
@@ -90,7 +90,8 @@ def regression_gradient_1loop(
     """
     n = len(x)
     d = len(w)
-    dwdl = torch.zeros(d)
+    dwdl = torch.cuda.FloatTensor(d)
+    dwdl.zero_()
     for i in range(n):
         x_i = x[i,:]
         dwdl += 2 * (w.dot(x_i) - y[i]) * x_i
@@ -109,7 +110,7 @@ def regression_gradient_0loops(
 
 
 def gradient_descent_regression(
-        x: torch.FloatTensor, y: torch.IntTensor) -> torch.FloatTensor:
+        x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor) -> torch.cuda.FloatTensor:
     """
     Arguments:
         x: 2D (N x D) input data
@@ -119,14 +120,14 @@ def gradient_descent_regression(
         w: 1D (D) weights of linear estimator
     """
     # settings
-    lr = 0.02
-    epochs = 1000
+    lr = 0.022
+    epochs = 1500
 
     # setup
-    x = x.cuda()
-    y = y.type(torch.cuda.FloatTensor)
+    y: torch.cuda.FloatTensor = y_int.type(torch.cuda.FloatTensor)
     n, d = x.size()
-    w = torch.randn(d).type(torch.cuda.FloatTensor)  # initial w is drawn from gaussian(0, 1)
+    # initial w is drawn from gaussian(0, 1)
+    w: torch.cuda.FloatTensor = torch.randn(d).type(torch.cuda.FloatTensor)  # type: ignore
 
     for epoch in range(epochs):
         # compute loss
@@ -145,17 +146,17 @@ def gradient_descent_regression(
         w -= lr * grad
 
         # maybe report
-        if epoch % 10 == 0:
+        if epoch % 100 == 0:
             print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f})'.format(
-                epoch, lr, l2_loss, torch.norm(grad, p=2)))
+                epoch, lr, l2_loss, grad.norm(p=2)))
 
     # give back final weights
     return w
 
 
 def regression_eval(
-        w: torch.FloatTensor, x: torch.FloatTensor,
-        y: torch.IntTensor) -> Tuple[float, float]:
+        w: torch.cuda.FloatTensor, x: torch.cuda.FloatTensor,
+        y: torch.cuda.IntTensor) -> Tuple[float, float]:
     """
     Arguments:
         w: 1D (D) weights of linear estimator
@@ -166,16 +167,16 @@ def regression_eval(
     y_hat = x.matmul(w)
 
     # for correct count, see how often the rounded predicted value matches gold
-    corr = (y_hat.round().type(torch.IntTensor) == y).sum()
+    corr: float = (y_hat.round().type(torch.cuda.IntTensor) == y).sum()
 
     # for l2 loss, compute sum of squared residuals
-    l2_loss = (y_hat - y.type(torch.FloatTensor)).pow(2).sum()
+    l2_loss: float = (y_hat - y.type(torch.cuda.FloatTensor)).pow(2).sum()
 
     # report num correct and loss
     return corr, l2_loss
 
 
-def report(method_name, w, x, y):
+def report(method_name: str, w: torch.cuda.FloatTensor, x: torch.cuda.FloatTensor, y: torch.cuda.IntTensor):
     corr, l2_loss = regression_eval(w, x, y)
     total = len(y)
 
@@ -187,18 +188,20 @@ def report(method_name, w, x, y):
 # execution starts here
 
 # load
-train_y, train_x = dataio.bin_to_tensors(constants.TRAIN_BIAS)
-val_y, val_x = dataio.bin_to_tensors(constants.VAL_BIAS)
+train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_BIAS)
+val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_BIAS)
 
-# get model parameters
-w = least_squares(train_x, train_y)
+train_y: torch.cuda.IntTensor = train_y_cpu.cuda()
+train_x: torch.cuda.FloatTensor = train_x_cpu.cuda()
+val_y: torch.cuda.IntTensor = val_y_cpu.cuda()
+val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 
-# see train & val perf
+# analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+w = least_squares(train_x_cpu, train_y_cpu)
 report('least squares', w, train_x, train_y)
 report('least squares', w, val_x, val_y)
 
 # try gradient descent
 w = gradient_descent_regression(train_x, train_y)
-w = w.type(torch.FloatTensor)
 report('gradient descent linear regression', w, train_x, train_y)
 report('gradient descent linear regression', w, val_x, val_y)

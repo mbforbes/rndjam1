@@ -19,7 +19,7 @@ pyenv install 3.6.2  # only if needed
 pyenv virtualenv 3.6.2 rndj1
 pyenv local rndj1  # if .python-version doesn't exist, this places it
 
-# pytroch. (get latest from pytorch.org. this is what i used.)
+# pytroch. (get latest from pytorch.org. this is what i used on ubuntu.)
 pip install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp36-cp36m-manylinux1_x86_64.whl
 pip install torchvision
 

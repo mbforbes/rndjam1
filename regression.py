@@ -203,7 +203,7 @@ val_y: torch.cuda.IntTensor = val_y_cpu.cuda()
 val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 
 # analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-w = least_squares(5, train_y_cpu)
+w = least_squares(train_x_cpu, train_y_cpu)
 report('least squares', w, train_x, train_y)
 report('least squares', w, val_x, val_y)
 

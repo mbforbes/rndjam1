@@ -32,6 +32,8 @@ pip install mypy
 # then in vs code:
 # (1) use command `Python: Select Workspace Interpreter` and pick rndj1
 # (2) in settings, disable pylint and prospector; enable mypy
+#
+# once mypy works again with --incremental or --quick-and-dirty:
 # (3) to get mypy to find libs (like torch), create a mypy.ini file in this
 #     directory with "[mypy]" on one line and then "mypy_path=<...>" on the
 #     next, where <...> is the path to the site-packages for the rndj1 venv,

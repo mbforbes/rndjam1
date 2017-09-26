@@ -10,6 +10,9 @@ Know when to use the following:
 ... as some might imply the others and be redundant.
 """
 
+# imports
+# ---
+
 # builtins
 import code
 from typing import Tuple
@@ -22,6 +25,9 @@ import torch
 import constants
 import dataio
 
+
+# functions
+# ---
 
 def least_squares(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.FloatTensor:
     """

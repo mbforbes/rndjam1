@@ -1,0 +1,14 @@
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+% define vars upfront
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+% analytic solution
+\begin{align*}
+0 &= \frac{\partial \mathcal{L}_{LS}}{\partial \w} \
+0 &= -2\y^T\X + 2\w^T\X^T\X \\
+2\w^T\X^T\X &= 2\y^T\X \\
+\w^T\X^T\X &= \y^T\X \\
+% TODO: inverse and/or pseudoinverse!
+\end{align*}

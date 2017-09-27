@@ -128,4 +128,19 @@ Math reminders:
 
 ### Least squares loss
 
+Loss:
+
 ![least squares loss](svg/least-squares-loss.svg)
+
+Expanding out for my noob math:
+
+![least squares loss expanded](svg/least-squares-loss-expanded.svg)
+
+Taking the derivative with respect to the weights:
+
+![least squares loss expanded derivative](svg/least-squares-loss-expanded-derivative.svg)
+
+Setting the derivative equal to 0 for the analytic solution (omitting second
+derivative check):
+
+![least squares analytic expanded](svg/least-squares-analytic-expanded.svg)

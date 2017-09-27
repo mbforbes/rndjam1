@@ -41,6 +41,14 @@ pip install mypy
 # (4) to get mypy to run interactively even w/ the huge site-packages dir, add
 #     the "--quick-and-dirty" arg to the "python.linting.mypyArgs" setting.
 
+# setup for generating math in README: SVGs from tex using mathjax-node-cli.
+# First, install node.js somehow. This depends on the OS. I'm using nvm.
+# Then, install the dependencies (mathjax-node-cli) with npm:
+npm install
+
+# now generate the svg files (placed in svg/) from the tex files in math/
+./scripts/tex_to_svg.sh
+
 # get data. writes to data/original/
 ./scripts/get_data.sh
 
@@ -96,3 +104,4 @@ Seems to actually work
 ```
 
 ![test latex in svg file](svg/test.svg)
+![test2 latex in svg file](svg/test2.svg)

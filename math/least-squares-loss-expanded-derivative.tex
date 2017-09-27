@@ -4,8 +4,8 @@
 \newcommand{\X}{\matrix{X}}
 \newcommand{\y}{\vector{y}}
 \newcommand{\w}{\vector{w}}
-% actual loss
+% actual loss and derivative
 \begin{align*}
-\frac{\partial \mathcal{L}_{LS}}{\partial \w} &= \frac{\partial}{\partial \w} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \\
+\frac{\partial}{\partial \w} \mathcal{L}_{LS} &= \frac{\partial}{\partial \w} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \\
 &= - 2\y^T\X + 2\w^T\X^T\X \\
 \end{align*}

@@ -6,9 +6,13 @@
 \newcommand{\w}{\vector{w}}
 % analytic solution
 \begin{align*}
-0 &= \frac{\partial \mathcal{L}_{LS}}{\partial \w} \
+0 &= \frac{\partial}{\partial \w} \mathcal{L}_{LS} \\
 0 &= -2\y^T\X + 2\w^T\X^T\X \\
-2\w^T\X^T\X &= 2\y^T\X \\
 \w^T\X^T\X &= \y^T\X \\
-% TODO: inverse and/or pseudoinverse!
+\w^T\X^T\X(\X^T\X)^{-1} &= \y^T\X(\X^T\X)^{-1} \quad \text{ may need to use } (\X^T\X)^+ \\
+\w^T &= \y^T\X(\X^T\X)^{-1} \\
+\w &= (\y^T\X(\X^T\X)^{-1})^T \\
+\w &= ((\X^T\X)^{-1})^T (\y^T\X)^T \\
+\w &= ((\X^T\X)^T)^{-1} \X^T\y \\
+\w &= (\X^T\X)^{-1} \X^T\y \\
 \end{align*}

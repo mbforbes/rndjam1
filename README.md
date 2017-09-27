@@ -144,3 +144,11 @@ Setting the derivative equal to 0 for the analytic solution (omitting second
 derivative check):
 
 ![least squares analytic expanded](svg/least-squares-analytic-expanded.svg)
+
+To do gradient descent, we'll use the gradient of the average loss per datum:
+
+![least squares average loss](svg/least-squares-average-loss.svg)
+
+We can just take scale the derivative that we took previously:
+
+![least squares gradient](svg/least-squares-gradient.svg)

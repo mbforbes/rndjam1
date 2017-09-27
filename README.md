@@ -87,12 +87,12 @@ way faster.
 
 ![data loading speeds, csv vs binary](images/data_loading.png)
 
-## testing
+## latex -> in markdown
 
-New test running with
+Seems to actually work
 
 ```bash
-./node_modules/mathjax-node-cli/bin/tex2svg $(< math/test.tex) > svg/test.svg
+./node_modules/mathjax-node-cli/bin/tex2svg "$(< math/test.tex)" > svg/test.svg
 ```
 
 ![test latex in svg file](svg/test.svg)

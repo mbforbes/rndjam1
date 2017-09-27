@@ -1,0 +1,10 @@
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\begin{align*}
+% L_p norm
+\|\underset{n}{\vector{x}}\|_p &= \left( |x_1|^p + |x_2|^p + \cdots + |x_n|^p \right)^\frac{1}{p} \\
+% special case for L_2 norm squared
+\|\underset{n}{\vector{x}}\|_2^2 &= \left( x_1^2 + x_2^2 + \cdots + x_n^2 \right) = \vector{x} \cdot \vector{x} = \vector{x}^T\vector{x} \\
+% note about vector dot product
+\underset{n}{\vector{x}} \cdot \underset{n}{\vector{y}} &= \vector{x}^T\vector{y} = \vector{y}^T\vector{x}
+\end{align*}

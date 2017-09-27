@@ -1,0 +1,8 @@
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+% define vars upfront
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+% actual loss
+\mathcal{L}_{LS}(\X,\w,\y) = \|y - Xw\|_2^2

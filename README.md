@@ -86,3 +86,7 @@ y-axis is seconds taken to load the file; lower is better. Result: binary is
 way faster.
 
 ![data loading speeds, csv vs binary](images/data_loading.png)
+
+## testing
+
+![test latex in svg file](svg/test.svg)

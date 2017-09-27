@@ -12,3 +12,6 @@ data/
 # running the editor, because you can put it here (mypy_path=<...>), and mypy
 # will automatically read this file when it runs.
 mypy.ini
+
+# Generating math because Github won't support latex in their markdown
+node_modules/

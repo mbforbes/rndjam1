@@ -1,4 +1,8 @@
+\newcommand{\matrix}[1]{\mathbf{#1}}
 \newcommand{\vector}[1]{\mathbf{#1}}
-\newcommand{\w}{\vector{w}}
+% define vars upfront
+\newcommand{\X}{\matrix{X}}
 \newcommand{\x}{\vector{x}}
-\frac{1}{n} \sum_{i=1}^n \mathcal{L}_{LS}(\x_i, y_i, \mathbf{w}) = \frac{1}{n} \sum_{i=1}^n (y_i - \x_i^T\w)^2
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\frac{1}{n} \sum_{i=1}^n \mathcal{L}_{LS}(\x_i, y_i, \w) = \frac{1}{n} \sum_{i=1}^n \mathcal{L}_{LS}(\X, \y, \w)

@@ -89,4 +89,10 @@ way faster.
 
 ## testing
 
+New test running with
+
+```bash
+./node_modules/mathjax-node-cli/bin/tex2svg $(< math/test.tex) > svg/test.svg
+```
+
 ![test latex in svg file](svg/test.svg)

@@ -1,0 +1,11 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+% ridge derivative
+\begin{align*}
+\frac{\partial}{\partial \w} \mathcal{L}_{RR} (\X,\y,\w,\lambda) &= \frac{1}{n} 2(\y - \X\w)^T (-\X) + \lambda 2 \w^T \\
+&= 2 \left( \lambda \w^T - \frac{1}{n}(\y^T\X + \w^T\X^T\X) \right)
+\end{align*}

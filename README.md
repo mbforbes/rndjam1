@@ -167,9 +167,23 @@ some constant smushing).
 
 ![ridge loss](svg/ridge-loss.svg)
 
+**Derivative:**
+
+(Being a bit more liberal with my hand waving of vector and matrix derivatives
+than above)
+
+![ridge derivative](svg/ridge-derivative.svg)
+
+**Analytic:**
+
+![ridge analytic](svg/ridge-analytic.svg)
+
 **Gradient:**
 
-TODO: curspot.
+(Just massaging the derivative we found a bit more.)
+
+![ridge gradient](svg/ridge-gradient.svg)
+
 
 ## Links
 

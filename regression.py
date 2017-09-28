@@ -48,6 +48,10 @@ def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Flo
 
         w = (X^T X)^+ X^T y
 
+    See the README section for the derivation:
+
+        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ols
+
     Arguments:
         x: 2D (N x D) tensor
         y: 1D (D) tensor
@@ -99,7 +103,8 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
     Returns ordinary least squares (OLS) gradient for per-datum averaged loss.
 
     See the README section for the derivation:
-    https://github.com/mbforbes/rndjam1/#least-squares-loss
+
+        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ols
 
     Note that the gradient is a vector:
 
@@ -124,6 +129,11 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
 #
 
 def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> torch.cuda.FloatTensor:
+    """
+    See the README section for the derivation:
+
+        https://github.com/mbforbes/rndjam1#ridge-regression
+    """
     # setup
     n, d = x.size()
     x_t = x.t()
@@ -135,6 +145,11 @@ def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> t
 
 
 def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> torch.cuda.FloatTensor:
+    """
+    See the README section for the derivation:
+
+        https://github.com/mbforbes/rndjam1#ridge-regression
+    """
     n, d = x.size()
     return 2*(lmb*w - (y.matmul(x) + w.matmul(x.t()).matmul(x))/n)
 

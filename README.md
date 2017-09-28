@@ -157,6 +157,12 @@ We can just take scale the derivative that we took previously to get our
 
 ![least squares gradient](svg/least-squares-gradient.svg)
 
+## Links
+
+- [Wikipedia: Table of regularized least squares functions](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)
+- [The Matrix Cookbook](https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf)
+- [OLS with matrices notes (author unk)](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf)
+
 ## Thanks
 
 To John Thickstun and Chris Xie for helping me out with math.

@@ -1,0 +1,15 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\DeclareMathOperator{\sgn}{sgn}
+% lasso derivative
+\begin{align*}
+\frac{\partial}{\partial \w} \|w\|_1 &= \frac{\partial}{\partial \w} \sum_{i=1}^d{|w_i|} \\
+&= \left[ \frac{\partial}{\partial w_1} \sum_{i=1}^d{|w_i|}, \frac{\partial}{\partial w_2} \sum_{i=1}^d{|w_i|}, \ldots, \frac{\partial}{\partial w_d} \sum_{i=1}^d{|w_i|}, \right]^T \\
+&= \left[ \frac{\partial}{\partial w_1} |w_1|, \frac{\partial}{\partial w_2} |w_2|, \ldots, \frac{\partial}{\partial w_d} |w_d| \right]^T \\
+&= \left[ \sgn(w_1), \sgn(w_2), \ldots, \sgn(w_d) \right]^T \\
+&= \sgn(\w^T) \\
+\end{align*}

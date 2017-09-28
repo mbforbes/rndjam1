@@ -1,0 +1,11 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\DeclareMathOperator{\sgn}{sgn}
+% lasso derivative, part 3
+\begin{align*}
+\frac{\partial}{\partial \w} \mathcal{L}_{\textit{Lasso}} (\X,\y,\w,\lambda) &= \frac{-2}{n} (\y - \X\w)^T\X + \lambda \sgn(\w^T) \\
+\end{align*}

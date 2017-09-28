@@ -1,10 +1,26 @@
 \newcommand{\matrix}[1]{\mathbf{#1}}
 \newcommand{\vector}[1]{\mathbf{#1}}
+\DeclareMathOperator{\sgn}{sgn}
 \begin{align*}
 % L_p norm
 \|\underset{n}{\vector{x}}\|_p &= \left( |x_1|^p + |x_2|^p + \cdots + |x_n|^p \right)^\frac{1}{p} \\
 % special case for L_2 norm squared
-\|\underset{n}{\vector{x}}\|_2^2 &= \left( x_1^2 + x_2^2 + \cdots + x_n^2 \right) = \vector{x} \cdot \vector{x} = \vector{x}^T\vector{x} \\
+\|\underset{n}{\vector{x}}\|_2^2 &= \left( x_1^2 + x_2^2 + \cdots + x_n^2 \right)^{\frac{1}{2} \cdot 2} = \sum_{i=1}^{n}{x_i^2} = \vector{x} \cdot \vector{x} = \vector{x}^T\vector{x} \\
+% special case for L_1 norm
+\|\underset{n}{\vector{x}}\|_1 &= \left( |x_1| + |x_2| + \cdots + |x_n| \right)^1 = \sum_{i=1}^{n}{|x_i|} \\
 % note about vector dot product
-\underset{n}{\vector{x}} \cdot \underset{n}{\vector{y}} &= \vector{x}^T\vector{y} = \vector{y}^T\vector{x}
+\underset{n}{\vector{x}} \cdot \underset{n}{\vector{y}} &= \vector{x}^T\vector{y} = \vector{y}^T\vector{x} \\
+% partial derivative notation can be compressed
+\frac{\partial y}{\partial x} &= \frac{\partial}{\partial x}y \\
+% derivative of scalar w.r.t. vector produces vector (gradient)
+\frac{\partial y}{\partial \underset{n}{\vector{x}}} &= \left[ \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2}, \ldots, \frac{\partial y}{\partial x_n} \right] \\
+% sgn (sign) function
+\sgn(x) &=
+\begin{cases}
+    -1 & \quad \text{if } x < 0 \\
+     0 & \quad \text{if } x = 0 \\
+     1 & \quad \text{if } x > 0 \\
+\end{cases} \\
+% sgn function, applied to a vector
+\sgn(\underset{n}{\vector{x}}) &= \left[ \sgn(x_1), \sgn(x_2), \ldots, \sgn(x_n) \right] \\
 \end{align*}

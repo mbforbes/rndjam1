@@ -185,6 +185,28 @@ than above)
 ![ridge gradient](svg/ridge-gradient.svg)
 
 
+### Lasso
+
+**Loss:**
+
+![lasso loss](svg/lasso-loss.svg)
+
+
+**Derivative:**
+
+![lasso derivative part 1](svg/lasso-derivative-part1.svg)
+
+Focusing on the final term, we'll use the subgradient, and pick `0` (valid in
+`[-1, 1]`) for the nondifferentiable point. This means we can use `sgn(x)` as
+the "derivative" of `|x|`.
+
+![lasso derivative part 2](svg/lasso-derivative-part2.svg)
+
+Substitute in to get the final term for the (sub)gradient:
+
+![lasso derivative part 3](svg/lasso-derivative-part3.svg)
+
+
 ## Links
 
 - [Wikipedia: Table of regularized least squares functions](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)

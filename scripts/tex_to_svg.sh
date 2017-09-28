@@ -6,5 +6,5 @@ for filename in math/*.tex; do
     # just echo'ing so we can see where errors happen when they do
     echo ${filename}
     bname=$(basename ${filename} .tex)
-    ./node_modules/mathjax-node-cli/bin/tex2svg "$(< ${filename})" > svg/${bname}.svg
+    ./node_modules/mathjax-node-cli/bin/tex2svg "$(< ${filename})" > svg/${bname}.svg &
 done

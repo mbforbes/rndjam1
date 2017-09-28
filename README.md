@@ -128,7 +128,7 @@ Math reminders:
 
 ### Least squares loss
 
-Dataset loss:
+Dataset **loss**:
 
 ![least squares loss](svg/least-squares-loss.svg)
 
@@ -136,22 +136,23 @@ Expanding out for my noob math:
 
 ![least squares loss expanded](svg/least-squares-loss-expanded.svg)
 
-Taking the derivative with respect to the weights:
+Taking the **derivative** of the loss function with respect to the weights:
 
 ![least squares loss expanded derivative](svg/least-squares-loss-expanded-derivative.svg)
 
-We can set the derivative equal to 0 and solve for the analytic solution
+We can set the derivative equal to 0 and solve for the **analytic solution**
 (omitting second derivative check):
 
 ![least squares analytic expanded](svg/least-squares-analytic-expanded.svg)
 
 To do gradient descent instead, we'll use the gradient of the average loss per
 datum. The average loss per datum is nice because it's invariant to the size of
-the dataset (or (mini)batch). The average loss per datum is simply:
+the dataset (or (mini)batch). The **average loss per datum** is simply:
 
 ![least squares average loss](svg/least-squares-average-loss.svg)
 
-We can just take scale the derivative that we took previously:
+We can just take scale the derivative that we took previously to get our
+**gradient for gradient descent**:
 
 ![least squares gradient](svg/least-squares-gradient.svg)
 

@@ -7,7 +7,7 @@
 \newcommand{\w}{\vector{w}}
 % actual loss and derivative
 \begin{align*}
-\frac{\partial}{\partial \w} \mathcal{L}_{LS}(\X,\y,\w) &amp;= \frac{\partial}{\partial \w} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \\
+\frac{\partial}{\partial \w} \mathcal{L}_{LS} (\X,\y,\w) &amp;= \frac{\partial}{\partial \w} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \\
 &amp;= -2\y^T\X + 2\w^T\X^T\X \\
 \end{align*}</title>
 <defs aria-hidden="true">

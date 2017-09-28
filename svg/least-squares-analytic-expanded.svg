@@ -7,7 +7,7 @@
 \newcommand{\w}{\vector{w}}
 % analytic solution
 \begin{align*}
-0 &amp;= \frac{\partial}{\partial \w} \mathcal{L}_{LS}(\X,\y,\w) \\
+0 &amp;= \frac{\partial}{\partial \w} \mathcal{L}_{LS} (\X,\y,\w) \\
 0 &amp;= -2\y^T\X + 2\w^T\X^T\X \\
 \w^T\X^T\X &amp;= \y^T\X \\
 \w^T\X^T\X(\X^T\X)^{-1} &amp;= \y^T\X(\X^T\X)^{-1} \quad \text{ may need to use } (\X^T\X)^+ \\

@@ -1,0 +1,8 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+% ridge loss
+\mathcal{L}_{RR} (\X,\y,\w,\lambda) = \frac{1}{n} \|\y - \X\w\|_2^2 + \lambda \|\w\|_2^2

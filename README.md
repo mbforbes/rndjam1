@@ -127,7 +127,7 @@ Math reminders:
 
 ![math reminders](svg/math-reminders.svg)
 
-### Least squares loss
+### Ordinary least squares (OLS)
 
 Dataset **loss**:
 
@@ -141,8 +141,8 @@ Taking the **derivative** of the loss function with respect to the weights:
 
 ![least squares loss expanded derivative](svg/least-squares-loss-expanded-derivative.svg)
 
-We can set the derivative equal to 0 and solve for the **analytic solution**
-(omitting second derivative check):
+We can set the gradient equal to 0 (the zero vector) and solve for the
+**analytic solution** (omitting second derivative check):
 
 ![least squares analytic expanded](svg/least-squares-analytic-expanded.svg)
 
@@ -152,10 +152,24 @@ the dataset (or (mini)batch). The **average loss per datum** is simply:
 
 ![least squares average loss](svg/least-squares-average-loss.svg)
 
-We can just take scale the derivative that we took previously to get our
+We can just take scale the gradient that we got previously to get our
 **gradient for gradient descent**:
 
 ![least squares gradient](svg/least-squares-gradient.svg)
+
+### Ridge regression
+
+From here on out, I'l just always use per-datum averaged loss for the
+convenience of having a single loss function (though sometimes this will cause
+some constant smushing).
+
+**Loss:**
+
+![ridge loss](svg/ridge-loss.svg)
+
+**Gradient:**
+
+TODO: curspot.
 
 ## Links
 

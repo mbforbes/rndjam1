@@ -15,7 +15,7 @@ Know when to use the following:
 
 # builtins
 import code
-from typing import Tuple
+from typing import Tuple, Union
 
 # 3rd party
 import numpy as np
@@ -24,6 +24,13 @@ import torch
 # local
 import constants
 import dataio
+
+
+# types
+# ---
+
+FloatTensor = Union[torch.FloatTensor, torch.cuda.FloatTensor]
+IntTensor = Union[torch.IntTensor, torch.cuda.IntTensor]
 
 
 # functions
@@ -51,7 +58,7 @@ def least_squares(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Fl
     # - tensor.inverse() does not work
     # - np.linalg.inv()  does not work
     # - np.linalg.pinv() works; uses SVD
-    inv: torch.FloatTensor = torch.from_numpy(np.linalg.pinv(x_t.matmul(x).numpy()))  # type: ignore
+    inv: torch.FloatTensor = torch.from_numpy(np.linalg.pinv(x_t.matmul(x).numpy()))
 
     # ... X^T y
     # note that matmul 2D x 2D tensors does matrix multiplication
@@ -60,26 +67,13 @@ def least_squares(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Fl
     return w.cuda()
 
 
-def regression_gradient_1loop(
-        w: torch.FloatTensor, x: torch.FloatTensor,
-        y: torch.FloatTensor) -> torch.FloatTensor:
+def regression_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor) -> FloatTensor:
     """
-    Computes (average, per datum) gradient for linear regression using squared
+    Computes (per datum average) gradient for linear regression using squared
     error loss.
 
-    The loss function L is the sum of squared errors
-
-        L(w,x,y) = ||Xw - y||_2^2
-
-                 = \sum_{i=1}^n (w^T x_i - y_i)^2
-
-    We'll redefine L to be the average loss per datum:
-
-        L(w,x,y) = 1/n \sum_{i=1}^n (w^T x_i - y_i)^2
-
-    The gradient with respect to the weight vector w is:
-
-        dL/dw = 1/n \sum_{i=1}^n 2(w^T X_i - y_i) X_i
+    See the README section for the derivation:
+    https://github.com/mbforbes/rndjam1/#least-squares-loss
 
     Note that the gradient is a vector:
 
@@ -91,28 +85,11 @@ def regression_gradient_1loop(
         y: 1D (D) target labels
 
     Returns:
-        dL/dw: 1D (D) derivative of squared error loss L, with the model of
-            linear regression (y_hat = w^T X), with respect to weights w.
-    """
-    n = len(x)
-    d = len(w)
-    dwdl = torch.cuda.FloatTensor(d)
-    dwdl.zero_()
-    for i in range(n):
-        x_i = x[i,:]
-        dwdl += 2 * (w.dot(x_i) - y[i]) * x_i
-    dwdl /= n
-    return dwdl
-
-
-def regression_gradient_0loops(
-        w: torch.FloatTensor, x: torch.FloatTensor,
-        y: torch.FloatTensor) -> torch.FloatTensor:
-    """
-    See regression_gradient_1loop(...).
+        dL/dw: 1D (D) derivative of ordinary least squares loss L with respect
+            to weights w.
     """
     n, d = x.size()
-    return ((x.matmul(w) - y).resize_(n, 1) * x).sum(dim=0) * 2 / n
+    return (2/n)*(w.matmul(x.t()).matmul(x) - y.matmul(x))
 
 
 def gradient_descent_regression(
@@ -133,7 +110,7 @@ def gradient_descent_regression(
     y: torch.cuda.FloatTensor = y_int.type(torch.cuda.FloatTensor)
     n, d = x.size()
     # initial w is drawn from gaussian(0, 1)
-    w: torch.cuda.FloatTensor = torch.randn(d).type(torch.cuda.FloatTensor)  # type: ignore
+    w: torch.cuda.FloatTensor = torch.randn(d).type(torch.cuda.FloatTensor)
 
     for epoch in range(epochs):
         # compute loss
@@ -141,8 +118,7 @@ def gradient_descent_regression(
         l2_loss = (y_hat - y).pow(2).sum()
 
         # compute gradient
-        # grad = regression_gradient_1loop(w, x, y)
-        grad = regression_gradient_0loops(w, x, y)
+        grad = regression_gradient(w, x, y)
 
         # maybe adjust lr
         # if epoch > 0 and epoch % 40 == 0:

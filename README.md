@@ -101,20 +101,21 @@ In this we regress each image to a scalar that is the number represented in
 that image. For example, we regress the image ![the first mnist
 datum](images/example_normal.jpg) to the number `5`.
 
-Disclaimer: this is dumb. If you're going to treat was is really a
-classification problem (like MNIST) as regression, you should regress to each
-class independently (i.e., do 10 regression problems at once instead of a
-single regression). Explaining why would take math that I would have to talk to
-people smarter than me to produce. I think the intuition is that you're making
-the learning problem harder by forcing these distinct classes to exist as
-points in a 1D real space, when they really have no relation to each other.
-
-However: (a) if you're dumb like me, you might try it, (b) if you're bad at
-math like me, it's simpler to start out with a "normal" regression than 10 of
-them, (c) I'm kind of treating this like a notebook, so might as well document
-the simple &rarr; complex progression of what I tried.
-
-So here we go.
+> Disclaimer: this is dumb. If you're going to treat was is really a
+> classification problem (like MNIST) as regression, you should regress to each
+> class independently (i.e., do 10 regression problems at once instead of a
+> single regression). Explaining why would take math that I would have to talk
+> to people smarter than me to produce. I think the intuition is that you're
+> making the learning problem harder by forcing these distinct classes to exist
+> as points in a 1D real space, when they really have no relation to each
+> other.
+>
+> However: (a) if you're dumb like me, you might try it, (b) if you're bad at
+> math like me, it's simpler to start out with a "normal" regression than 10 of
+> them, (c) I'm kind of treating this like a notebook, so might as well
+> document the simple &rarr; complex progression of what I tried.
+>
+> So here we go.
 
 ### Notation
 

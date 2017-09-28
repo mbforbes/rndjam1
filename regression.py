@@ -15,7 +15,7 @@ Know when to use the following:
 
 # builtins
 import code
-from typing import Tuple, Union
+from typing import Tuple, Union, Callable
 
 # 3rd party
 import numpy as np
@@ -31,14 +31,20 @@ import dataio
 
 FloatTensor = Union[torch.FloatTensor, torch.cuda.FloatTensor]
 IntTensor = Union[torch.IntTensor, torch.cuda.IntTensor]
-
+LossFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], float]
 
 # functions
 # ---
 
-def least_squares(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.FloatTensor:
+#
+# ordinary least squares (OLS)
+#
+
+def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.FloatTensor:
     """
-    w = (X^T X)^-1 X^T y
+    Returns ordinary least squares (OLS) analytic solution:
+
+        w = (X^T X)^+ X^T y
 
     Arguments:
         x: 2D (N x D) tensor
@@ -67,10 +73,28 @@ def least_squares(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Fl
     return w.cuda()
 
 
-def regression_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor) -> FloatTensor:
+def ols_avg_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> float:
     """
-    Computes (per datum average) gradient for linear regression using squared
-    error loss.
+    Returns ordinary least squares (OLS) loss, averaged per datum:
+
+        1/n ||y - Xw||_2^2
+
+    Arguments:
+        w: 1D (D) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D) target labels
+        _: unused (for API compatibility with regularized loss functions)
+
+    Returns:
+        ordinary least squares loss
+    """
+    n, d = x.size()
+    return (x.matmul(w) - y).pow(2).sum()/n
+
+
+def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor) -> FloatTensor:
+    """
+    Returns ordinary least squares (OLS) gradient for per-datum averaged loss.
 
     See the README section for the derivation:
     https://github.com/mbforbes/rndjam1/#least-squares-loss
@@ -85,12 +109,50 @@ def regression_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor) -> Float
         y: 1D (D) target labels
 
     Returns:
-        dL/dw: 1D (D) derivative of ordinary least squares loss L with respect
-            to weights w.
+        dL/dw: 1D (D) derivative of 1/n averaged OLS loss L with respect to
+            weights w.
     """
     n, d = x.size()
     return (2/n)*(w.matmul(x.t()).matmul(x) - y.matmul(x))
 
+
+#
+# ridge regression
+#
+
+def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> torch.cuda.FloatTensor:
+    # setup
+    n, d = x.size()
+    x_t = x.t()
+    i = torch.nn.init.eye(torch.cuda.FloatTensor(d,d))
+    y = y_int.type(torch.cuda.FloatTensor)
+
+    # formula
+    return (x_t.matmul(x) + lmb*i).inverse().matmul(x_t).matmul(y)
+
+
+def ridge_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
+    """
+    Returns ridge loss, where the the data component is averaged per datum (as
+    in ols_avg_loss(...)), and the regularization component is not:
+
+        1/n ( ||y - Xw||_2^2 ) + lmb * w_2^2
+
+    Arguments:
+        w: 1D (D) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D) target labels
+
+    Returns:
+        ridge loss
+    """
+    return ols_avg_loss(w, x, y, 0.0) + lmb*w.pow(2).sum()
+
+
+#
+# TODO: generalize the following functions to support all naive regression
+# methods
+#
 
 def gradient_descent_regression(
         x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor) -> torch.cuda.FloatTensor:
@@ -105,6 +167,7 @@ def gradient_descent_regression(
     # settings
     lr = 0.022
     epochs = 1500
+    dummy = 0.0
 
     # setup
     y: torch.cuda.FloatTensor = y_int.type(torch.cuda.FloatTensor)
@@ -114,11 +177,10 @@ def gradient_descent_regression(
 
     for epoch in range(epochs):
         # compute loss
-        y_hat = x.matmul(w)
-        l2_loss = (y_hat - y).pow(2).sum()
+        loss = ols_avg_loss(w, x, y, dummy)
 
         # compute gradient
-        grad = regression_gradient(w, x, y)
+        grad = ols_gradient(w, x, y)
 
         # maybe adjust lr
         # if epoch > 0 and epoch % 40 == 0:
@@ -130,7 +192,7 @@ def gradient_descent_regression(
         # maybe report
         if epoch % 100 == 0:
             print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f})'.format(
-                epoch, lr, l2_loss, grad.norm(p=2)))
+                epoch, lr, loss, grad.norm(p=2)))
 
     # give back final weights
     return w
@@ -138,7 +200,7 @@ def gradient_descent_regression(
 
 def regression_eval(
         w: torch.cuda.FloatTensor, x: torch.cuda.FloatTensor,
-        y: torch.cuda.IntTensor) -> Tuple[float, float]:
+        y: torch.cuda.IntTensor, lmb: float, loss_fn: LossFn,) -> Tuple[float, float]:
     """
     Arguments:
         w: 1D (D) weights of linear estimator
@@ -149,22 +211,24 @@ def regression_eval(
     y_hat = x.matmul(w)
 
     # for correct count, see how often the rounded predicted value matches gold
-    corr: float = (y_hat.round().type(torch.cuda.IntTensor) == y).sum()
+    corr = (y_hat.round().type(torch.cuda.IntTensor) == y).sum()
 
-    # for l2 loss, compute sum of squared residuals
-    l2_loss: float = (y_hat - y.type(torch.cuda.FloatTensor)).pow(2).sum()
+    # for loss, compute sum of squared residuals
+    loss = loss_fn(w, x, y.type(torch.cuda.FloatTensor), lmb)
 
     # report num correct and loss
-    return corr, l2_loss
+    return corr, loss
 
 
-def report(method_name: str, w: torch.cuda.FloatTensor, x: torch.cuda.FloatTensor, y: torch.cuda.IntTensor):
-    corr, l2_loss = regression_eval(w, x, y)
+def report(
+        method_name: str, w: torch.cuda.FloatTensor, x: torch.cuda.FloatTensor,
+        y: torch.cuda.IntTensor, lmb: float, loss_fn: LossFn) -> None:
+    corr, loss = regression_eval(w, x, y, lmb, loss_fn)
     total = len(y)
 
     print('{} accuracy: {}/{} ({}%)'.format(
         method_name, corr, total, round((corr/total)*100, 2)))
-    print('{} l2 loss: {}'.format(method_name, l2_loss))
+    print('{} average loss: {}'.format(method_name, loss))
 
 
 # execution starts here
@@ -178,12 +242,20 @@ train_x: torch.cuda.FloatTensor = train_x_cpu.cuda()
 val_y: torch.cuda.IntTensor = val_y_cpu.cuda()
 val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 
-# analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-w = least_squares(train_x_cpu, train_y_cpu)
-report('least squares', w, train_x, train_y)
-report('least squares', w, val_x, val_y)
+dummy = 0.0
 
-# try gradient descent
-w = gradient_descent_regression(train_x, train_y)
-report('gradient descent linear regression', w, train_x, train_y)
-report('gradient descent linear regression', w, val_x, val_y)
+# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+w = ols_analytic(train_x_cpu, train_y_cpu)
+report('OLS analytic (train)', w, train_x, train_y, dummy, ols_avg_loss)
+report('OLS analytic (val)', w, val_x, val_y, dummy, ols_avg_loss)
+
+# OLS gradient descent
+# w = gradient_descent_regression(train_x, train_y)
+# report('OLS GD (train)', w, train_x, train_y, dummy, ols_avg_loss)
+# report('OLS GD (val)', w, val_x, val_y, dummy, ols_avg_loss)
+
+# ridge analytic solution
+for lmb in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]:
+    w = ridge_analytic(train_x, train_y, lmb)
+    report('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+    report('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)

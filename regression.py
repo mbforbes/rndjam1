@@ -335,7 +335,7 @@ dummy = 0.0
 # naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
 # ridge analytic solution
-for lmb in [2]:
+for lmb in [0.2]:
     w = ridge_analytic(train_x, train_y, lmb)
     # code.interact(local=dict(globals(), **locals()))
     naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
@@ -343,7 +343,7 @@ for lmb in [2]:
 
 # ridge GD
 ridge_gd_settings: GDSettings = {'lr': 0.0001, 'epochs': 200, 'report_interval': 10}
-for lmb in [2]:
+for lmb in [0.2]:
     w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
     naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
     naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)

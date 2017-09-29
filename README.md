@@ -206,7 +206,6 @@ Substitute in to get the final term for the (sub)gradient:
 
 ![lasso derivative part 3](svg/lasso-derivative-part3.svg)
 
-
 ## Links
 
 - [Wikipedia: Table of regularized least squares functions](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)

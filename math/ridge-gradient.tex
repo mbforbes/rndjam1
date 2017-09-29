@@ -7,5 +7,6 @@
 % ridge derivative
 \begin{align*}
 \frac{\partial}{\partial \w} \mathcal{L}_{RR} (\X,\y,\w,\lambda) &= \frac{1}{n} 2(\y - \X\w)^T (-\X) + \lambda 2 \w^T \\
-&= 2 \left( \lambda \w^T - \frac{1}{n}(\y^T\X + \w^T\X^T\X) \right)
+&= 2 \left( \lambda \w^T - \frac{1}{n}(\y^T\X + \w^T\X^T\X) \right) \\
+&= 2 \left( \lambda \w - \frac{1}{n}(\X^T\y + \X^T\X\w) \right) \quad \text{ transpose to get column vector} \\
 \end{align*}

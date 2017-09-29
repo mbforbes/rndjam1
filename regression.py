@@ -121,7 +121,8 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
             weights w.
     """
     n, d = x.size()
-    return (2/n)*(w.matmul(x.t()).matmul(x) - y.matmul(x))
+    x_t = x.t()
+    return (2/n)*(x_t.matmul(x).matmul(w) - x_t.matmul(y))
 
 
 #
@@ -188,7 +189,8 @@ def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
         ridge gradient
     """
     n, d = x.size()
-    return 2*(lmb*w - (y.matmul(x) + w.matmul(x.t()).matmul(x))/n)
+    x_t = x.t()
+    return 2*(lmb*w - (x_t.matmul(y) + x_t.matmul(x).matmul(w))/n)
 
 
 #
@@ -230,7 +232,7 @@ def lasso_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
         lasso gradient
     """
     n, d = x.size()
-    return (-2/n)*(y - x.matmul(w)).matmul(x) + lmb*w.sign()
+    return (-2/n)*x.t().matmul(y - x.matmul(w)) + lmb*w.sign()
 
 #
 # general
@@ -315,16 +317,16 @@ val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 
 dummy = 0.0
 
-# # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-# w = ols_analytic(train_x_cpu, train_y_cpu)
-# naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
-# naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
+# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+w = ols_analytic(train_x_cpu, train_y_cpu)
+naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 
-# # OLS gradient descent
-# ols_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500}
-# w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-# naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
-# naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
+# OLS gradient descent
+ols_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500}
+w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
 # # ridge analytic solution
 # for lmb in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]:

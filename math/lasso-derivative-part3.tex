@@ -8,4 +8,5 @@
 % lasso derivative, part 3
 \begin{align*}
 \frac{\partial}{\partial \w} \mathcal{L}_{\textit{Lasso}} (\X,\y,\w,\lambda) &= \frac{-2}{n} (\y - \X\w)^T\X + \lambda \sgn(\w^T) \\
+&= \frac{-2}{n} \X^T(\y - \X\w) + \lambda \sgn(\w) \quad \text{ transpose to get column vector} \\
 \end{align*}

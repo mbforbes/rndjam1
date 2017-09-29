@@ -127,6 +127,13 @@ Math reminders:
 
 ![math reminders](svg/math-reminders.svg)
 
+NB: While the derivative of a function **f** : ℝ<sup>n</sup> &rarr; ℝ is
+[technically a row
+vector](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant),
+people&trade; have decided that gradients of functions are column vectors,
+which is why I have transposes sprinkled below. (Thanks to Chris Xie for
+explaining this.)
+
 ### Ordinary least squares (OLS)
 
 Dataset **loss**:
@@ -191,7 +198,6 @@ than above)
 
 ![lasso loss](svg/lasso-loss.svg)
 
-
 **Derivative:**
 
 ![lasso derivative part 1](svg/lasso-derivative-part1.svg)
@@ -212,6 +218,6 @@ Substitute in to get the final term for the (sub)gradient:
 - [The Matrix Cookbook](https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf)
 - [OLS with matrices notes (author unk)](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf)
 
-## Thanks
+## Acknowledgements
 
-To John Thickstun and Chris Xie for helping me out with math.
+Many thanks to Chris Xie and John Thickstun for helping me out with math.

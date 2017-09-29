@@ -191,7 +191,6 @@ than above)
 
 ![ridge gradient](svg/ridge-gradient.svg)
 
-
 ### Lasso
 
 **Loss:**

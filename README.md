@@ -211,6 +211,10 @@ Substitute in to get the final term for the (sub)gradient:
 
 ![lasso derivative part 3](svg/lasso-derivative-part3.svg)
 
+NB: There's no soft thresholding (sparsity-encouraging) property of LASSO when
+you use gradient descent. You need something like coordinate descent to get
+that.
+
 ## Links
 
 - [Wikipedia: Table of regularized least squares functions](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)

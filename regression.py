@@ -168,9 +168,11 @@ def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> t
     x_t = x.t()
     i = torch.nn.init.eye(torch.cuda.FloatTensor(d,d))
     y = y_int.type(torch.cuda.FloatTensor)
+    # In the analytic solution, `lambda` really was `lambda * n`.
+    lmb_prime = n * lmb
 
     # formula
-    return (x_t.matmul(x) + lmb*i).inverse().matmul(x_t).matmul(y)
+    return (x_t.matmul(x) + lmb_prime*i).inverse().matmul(x_t).matmul(y)
 
 
 def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> torch.cuda.FloatTensor:
@@ -252,6 +254,7 @@ def gradient_descent_regression(
     # extract GD settings
     lr = settings['lr']
     epochs = int(settings['epochs'])
+    report_interval = int(settings['report_interval'])
 
     # setup
     y = y_int.type(torch.cuda.FloatTensor)
@@ -272,7 +275,7 @@ def gradient_descent_regression(
         w -= lr * grad
 
         # maybe report
-        if epoch % 100 == 0:
+        if epoch % report_interval == 0:
             print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f})'.format(
                 epoch, lr, loss, grad.norm(p=2)))
 
@@ -307,36 +310,40 @@ def naive_regression_eval(
 # execution starts here
 
 # load
+print('Loading data...')
 train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_BIAS)
 val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_BIAS)
 
+print('Moving data to GPU...')
 train_y: torch.cuda.IntTensor = train_y_cpu.cuda()
 train_x: torch.cuda.FloatTensor = train_x_cpu.cuda()
 val_y: torch.cuda.IntTensor = val_y_cpu.cuda()
 val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 
+print('Starting experiments...')
 dummy = 0.0
 
-# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-w = ols_analytic(train_x_cpu, train_y_cpu)
-naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
+# # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+# w = ols_analytic(train_x_cpu, train_y_cpu)
+# naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 
-# OLS gradient descent
-ols_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500}
-w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
+# # OLS gradient descent
+# ols_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500, 'report_interval': 100}
+# w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+# naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
-# # ridge analytic solution
-# for lmb in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]:
-#     w = ridge_analytic(train_x, train_y, lmb)
-#     naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-#     naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+# ridge analytic solution
+for lmb in [2]:
+    w = ridge_analytic(train_x, train_y, lmb)
+    # code.interact(local=dict(globals(), **locals()))
+    naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+    naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
 
 # ridge GD
-ridge_gd_settings: GDSettings = {'lr': 0.001, 'epochs': 1500}
-for lmb in [0.01, 1.0, 10.0, 1000.0, 10000.0]:
+ridge_gd_settings: GDSettings = {'lr': 0.0001, 'epochs': 200, 'report_interval': 10}
+for lmb in [2]:
     w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
     naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
     naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)

@@ -42,6 +42,25 @@ GDSettings = Dict[str, float]
 # ordinary least squares (OLS)
 #
 
+def ols_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> float:
+    """
+    Returns ordinary least squares (OLS) loss, averaged per datum:
+
+        1/n ||y - Xw||_2^2
+
+    Arguments:
+        w: 1D (D) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D) target labels
+        _: unused (for API compatibility with regularized loss functions)
+
+    Returns:
+        ordinary least squares loss
+    """
+    n, d = x.size()
+    return (x.matmul(w) - y).pow(2).sum()/n
+
+
 def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.FloatTensor:
     """
     Returns ordinary least squares (OLS) analytic solution:
@@ -79,25 +98,6 @@ def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Flo
     return w.cuda()
 
 
-def ols_avg_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> float:
-    """
-    Returns ordinary least squares (OLS) loss, averaged per datum:
-
-        1/n ||y - Xw||_2^2
-
-    Arguments:
-        w: 1D (D) weights of linear estimator
-        x: 2D (N x D) input data
-        y: 1D (D) target labels
-        _: unused (for API compatibility with regularized loss functions)
-
-    Returns:
-        ordinary least squares loss
-    """
-    n, d = x.size()
-    return (x.matmul(w) - y).pow(2).sum()/n
-
-
 def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> FloatTensor:
     """
     Returns ordinary least squares (OLS) gradient for per-datum averaged loss.
@@ -128,11 +128,39 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
 # ridge regression
 #
 
+
+def ridge_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
+    """
+    Returns ridge loss, where the the data component is averaged per datum (as
+    in ols_loss(...)), and the regularization component is not:
+
+        1/n ( ||y - Xw||_2^2 ) + lmb * ||w||_2^2
+
+    Arguments:
+        w: 1D (D) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D) target labels
+        lmb: regularization strength (lambda)
+
+    Returns:
+        ridge loss
+    """
+    return ols_loss(w, x, y, 0.0) + lmb*w.pow(2).sum()
+
+
 def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> torch.cuda.FloatTensor:
     """
     See the README section for the derivation:
 
         https://github.com/mbforbes/rndjam1#ridge-regression
+
+    Arguments:
+        x: 2D (N x D) input data
+        y_int: 1D (D) target labels
+        lmb: regularization strength (lambda)
+
+    Returns:
+        ridge weights
     """
     # setup
     n, d = x.size()
@@ -149,28 +177,64 @@ def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
     See the README section for the derivation:
 
         https://github.com/mbforbes/rndjam1#ridge-regression
-    """
-    n, d = x.size()
-    return 2*(lmb*w - (y.matmul(x) + w.matmul(x.t()).matmul(x))/n)
-
-
-def ridge_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
-    """
-    Returns ridge loss, where the the data component is averaged per datum (as
-    in ols_avg_loss(...)), and the regularization component is not:
-
-        1/n ( ||y - Xw||_2^2 ) + lmb * w_2^2
 
     Arguments:
         w: 1D (D) weights of linear estimator
         x: 2D (N x D) input data
         y: 1D (D) target labels
+        lmb: regularization strength (lambda)
 
     Returns:
-        ridge loss
+        ridge gradient
     """
-    return ols_avg_loss(w, x, y, 0.0) + lmb*w.pow(2).sum()
+    n, d = x.size()
+    return 2*(lmb*w - (y.matmul(x) + w.matmul(x.t()).matmul(x))/n)
 
+
+#
+# lasso
+#
+
+def lasso_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
+    """
+    Returns lasso loss, where the the data component is averaged per datum (as
+    in ols_loss(...)), and the regularization component is not:
+
+        1/n ( ||y - Xw||_2^2 ) + lmb * ||w||_1
+
+    Arguments:
+        w: 1D (D) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D) target labels
+        lmb: regularization strength (lambda)
+
+    Returns:
+        lasso loss
+    """
+    return ols_loss(w, x, y, 0.0) + lmb*w.abs().sum()
+
+
+def lasso_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> torch.cuda.FloatTensor:
+    """
+    See the README section for the derivation:
+
+        https://github.com/mbforbes/rndjam1#lasso
+
+    Arguments:
+        w: 1D (D) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D) target labels
+        lmb: regularization strength (lambda)
+
+    Returns:
+        lasso gradient
+    """
+    n, d = x.size()
+    return (-2/n)*(y - x.matmul(w)).matmul(x) + lmb*w.sign()
+
+#
+# general
+#
 
 def gradient_descent_regression(
         x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor, lmb: float,
@@ -197,10 +261,10 @@ def gradient_descent_regression(
         # NOTE: can adjust lr if desired
 
         # compute loss
-        loss = ols_avg_loss(w, x, y, lmb)
+        loss = loss_fn(w, x, y, lmb)
 
         # compute gradient
-        grad = ols_gradient(w, x, y, lmb)
+        grad = grad_fn(w, x, y, lmb)
 
         # update weights
         w -= lr * grad
@@ -251,25 +315,25 @@ val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 
 dummy = 0.0
 
-# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-w = ols_analytic(train_x_cpu, train_y_cpu)
-naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_avg_loss)
-naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_avg_loss)
+# # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+# w = ols_analytic(train_x_cpu, train_y_cpu)
+# naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 
-# OLS gradient descent
-ols_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500}
-w = gradient_descent_regression(train_x, train_y, -1, ols_avg_loss, ols_gradient, ols_gd_settings)
-naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_avg_loss)
-naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_avg_loss)
+# # OLS gradient descent
+# ols_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500}
+# w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+# naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
-# ridge analytic solution
-for lmb in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]:
-    w = ridge_analytic(train_x, train_y, lmb)
-    naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-    naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+# # ridge analytic solution
+# for lmb in [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]:
+#     w = ridge_analytic(train_x, train_y, lmb)
+#     naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+#     naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
 
 # ridge GD
-ridge_gd_settings: GDSettings = {'lr': 0.022, 'epochs': 1500}
+ridge_gd_settings: GDSettings = {'lr': 0.001, 'epochs': 1500}
 for lmb in [0.01, 1.0, 10.0, 1000.0, 10000.0]:
     w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
     naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)

@@ -39,6 +39,18 @@ GDSettings = Dict[str, float]
 # ---
 
 #
+# util
+#
+
+def small_clamp_(t: torch.Tensor, limit: float, clamp_to: float = 0) -> None:
+    """
+    For all elements t_i in t, if -limit <= t_i <= limit, then t[i] is set to
+    clamp_to.
+    """
+    t[(t <= limit) & (t >= -limit)] = clamp_to
+
+
+#
 # ordinary least squares (OLS)
 #
 
@@ -272,10 +284,14 @@ def gradient_descent_regression(
         # update weights
         w -= lr * grad
 
+        # if lasso, clamp
+        if grad_fn == lasso_gradient:
+            small_clamp_(w, lmb/2)
+
         # maybe report
         if epoch % report_interval == 0:
-            print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f})'.format(
-                epoch, lr, loss, grad.norm(p=2)))
+            print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f}) (0 ws: {})'.format(
+                epoch, lr, loss, grad.norm(p=2), (w == 0).sum()))
 
     # give back final weights
     return w
@@ -339,12 +355,12 @@ naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 #     naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
 #     naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
 
-# # ridge GD
-# ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
-# for lmb in [0.2]:
-#     w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
-#     naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-#     naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+# ridge GD
+ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
+for lmb in [0.2]:
+    w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
+    naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+    naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
 
 # lasso GD
 lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}

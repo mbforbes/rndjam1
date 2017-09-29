@@ -10,9 +10,7 @@
 \frac{\partial}{\partial \w} \mathcal{L}_{RR} (\X,\y,\w,\lambda) &amp;= \frac{1}{n} 2(\y - \X\w)^T (-\X) + \lambda 2 \w^T \\
 &amp;= 2 \lambda \w^T - \frac{2}{n} (\y - \X\w)^T \X \\
 &amp;= 2 \lambda \w - \frac{2}{n} \X^T (\y - \X\w) \quad \text{transpose to get column vector} \\
-&amp;= 2 \lambda \w + \frac{2}{n} \X^T (\X\w - \y) \\
-% &amp;= 2 \left( \lambda \w^T - \frac{1}{n}(\y^T\X + \w^T\X^T\X) \right) \\
-% &amp;= 2 \left( \lambda \w - \frac{1}{n}(\X^T\y + \X^T\X\w) \right) \quad \text{ transpose to get column vector} \\
+&amp;= \frac{2}{n} \X^T (\X\w - \y) + 2 \lambda \w \\
 \end{align*}</title>
 <defs aria-hidden="true">
 <path stroke-width="1" id="E1-MJMAIN-2202" d="M202 508Q179 508 169 520T158 547Q158 557 164 577T185 624T230 675T301 710L333 715H345Q378 715 384 714Q447 703 489 661T549 568T566 457Q566 362 519 240T402 53Q321 -22 223 -22Q123 -22 73 56Q42 102 42 148V159Q42 276 129 370T322 465Q383 465 414 434T455 367L458 378Q478 461 478 515Q478 603 437 639T344 676Q266 676 223 612Q264 606 264 572Q264 547 246 528T202 508ZM430 306Q430 372 401 400T333 428Q270 428 222 382Q197 354 183 323T150 221Q132 149 132 116Q132 21 232 21Q244 21 250 22Q327 35 374 112Q389 137 409 196T430 306Z"></path>
@@ -190,27 +188,27 @@
 </g>
 <g transform="translate(0,-3640)">
  <use xlink:href="#E1-MJMAIN-3D" x="277" y="0"></use>
- <use xlink:href="#E1-MJMAIN-32" x="1334" y="0"></use>
- <use xlink:href="#E1-MJMATHI-3BB" x="1834" y="0"></use>
- <use xlink:href="#E1-MJMAINB-77" x="2418" y="0"></use>
- <use xlink:href="#E1-MJMAIN-2B" x="3471" y="0"></use>
-<g transform="translate(4250,0)">
-<g transform="translate(342,0)">
+<g transform="translate(1056,0)">
+<g transform="translate(397,0)">
 <rect stroke="none" width="720" height="60" x="0" y="220"></rect>
  <use xlink:href="#E1-MJMAIN-32" x="110" y="676"></use>
  <use xlink:href="#E1-MJMATHI-6E" x="60" y="-686"></use>
 </g>
 </g>
-<g transform="translate(5433,0)">
+<g transform="translate(2294,0)">
  <use xlink:href="#E1-MJMAINB-58" x="0" y="0"></use>
  <use transform="scale(0.707)" xlink:href="#E1-MJMATHI-54" x="1229" y="585"></use>
 </g>
- <use xlink:href="#E1-MJMAIN-28" x="6900" y="0"></use>
- <use xlink:href="#E1-MJMAINB-58" x="7290" y="0"></use>
- <use xlink:href="#E1-MJMAINB-77" x="8159" y="0"></use>
- <use xlink:href="#E1-MJMAIN-2212" x="9213" y="0"></use>
- <use xlink:href="#E1-MJMAINB-79" x="10214" y="0"></use>
- <use xlink:href="#E1-MJMAIN-29" x="10821" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-28" x="3762" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-58" x="4151" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-77" x="5021" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-2212" x="6074" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-79" x="7075" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-29" x="7683" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-2B" x="8294" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-32" x="9295" y="0"></use>
+ <use xlink:href="#E1-MJMATHI-3BB" x="9796" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-77" x="10379" y="0"></use>
 </g>
 </g>
 </g>

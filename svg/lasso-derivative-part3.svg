@@ -1,4 +1,4 @@
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="87.994ex" height="10.843ex" style="vertical-align: -4.636ex; margin-bottom: -0.202ex;" viewBox="0 -2585.3 37886 4668.3" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="87.994ex" height="16.509ex" style="vertical-align: -7.355ex; margin-bottom: -0.316ex;" viewBox="0 -3805.2 37886 7108.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
 <title id="MathJax-SVG-1-Title">% preamble
 \newcommand{\matrix}[1]{\mathbf{#1}}
 \newcommand{\vector}[1]{\mathbf{#1}}
@@ -10,6 +10,7 @@
 \begin{align*}
 \frac{\partial}{\partial \w} \mathcal{L}_{\textit{Lasso}} (\X,\y,\w,\lambda) &amp;= \frac{-2}{n} (\y - \X\w)^T\X + \lambda \sgn(\w^T) \\
 &amp;= \frac{-2}{n} \X^T(\y - \X\w) + \lambda \sgn(\w) \quad \text{ transpose to get column vector} \\
+&amp;= \frac{2}{n} \X^T(\X\w - \y) + \lambda \sgn(\w) \\
 \end{align*}</title>
 <defs aria-hidden="true">
 <path stroke-width="1" id="E1-MJMAIN-2202" d="M202 508Q179 508 169 520T158 547Q158 557 164 577T185 624T230 675T301 710L333 715H345Q378 715 384 714Q447 703 489 661T549 568T566 457Q566 362 519 240T402 53Q321 -22 223 -22Q123 -22 73 56Q42 102 42 148V159Q42 276 129 370T322 465Q383 465 414 434T455 367L458 378Q478 461 478 515Q478 603 437 639T344 676Q266 676 223 612Q264 606 264 572Q264 547 246 528T202 508ZM430 306Q430 372 401 400T333 428Q270 428 222 382Q197 354 183 323T150 221Q132 149 132 116Q132 21 232 21Q244 21 250 22Q327 35 374 112Q389 137 409 196T430 306Z"></path>
@@ -49,7 +50,7 @@
 <g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
 <g transform="translate(167,0)">
 <g transform="translate(-11,0)">
-<g transform="translate(0,1103)">
+<g transform="translate(0,2274)">
 <g transform="translate(120,0)">
 <rect stroke="none" width="1519" height="60" x="0" y="220"></rect>
  <use xlink:href="#E1-MJMAIN-2202" x="475" y="676"></use>
@@ -80,7 +81,7 @@
 </g>
 </g>
 <g transform="translate(9291,0)">
-<g transform="translate(0,1103)">
+<g transform="translate(0,2274)">
  <use xlink:href="#E1-MJMAIN-3D" x="277" y="0"></use>
 <g transform="translate(1056,0)">
 <g transform="translate(397,0)">
@@ -116,7 +117,7 @@
 </g>
  <use xlink:href="#E1-MJMAIN-29" x="13994" y="0"></use>
 </g>
-<g transform="translate(0,-1299)">
+<g transform="translate(0,-128)">
  <use xlink:href="#E1-MJMAIN-3D" x="277" y="0"></use>
 <g transform="translate(1056,0)">
 <g transform="translate(397,0)">
@@ -176,6 +177,36 @@
  <use xlink:href="#E1-MJMAIN-6F" x="12581" y="0"></use>
  <use xlink:href="#E1-MJMAIN-72" x="13081" y="0"></use>
 </g>
+</g>
+<g transform="translate(0,-2469)">
+ <use xlink:href="#E1-MJMAIN-3D" x="277" y="0"></use>
+<g transform="translate(1056,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="720" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-MJMAIN-32" x="110" y="676"></use>
+ <use xlink:href="#E1-MJMATHI-6E" x="60" y="-686"></use>
+</g>
+</g>
+<g transform="translate(2294,0)">
+ <use xlink:href="#E1-MJMAINB-58" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMATHI-54" x="1229" y="585"></use>
+</g>
+ <use xlink:href="#E1-MJMAIN-28" x="3762" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-58" x="4151" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-77" x="5021" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-2212" x="6074" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-79" x="7075" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-29" x="7683" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-2B" x="8294" y="0"></use>
+ <use xlink:href="#E1-MJMATHI-3BB" x="9295" y="0"></use>
+<g transform="translate(10045,0)">
+ <use xlink:href="#E1-MJMAIN-73"></use>
+ <use xlink:href="#E1-MJMAIN-67" x="394" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-6E" x="895" y="0"></use>
+</g>
+ <use xlink:href="#E1-MJMAIN-28" x="11497" y="0"></use>
+ <use xlink:href="#E1-MJMAINB-77" x="11886" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-29" x="12718" y="0"></use>
 </g>
 </g>
 </g>

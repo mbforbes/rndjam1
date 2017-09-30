@@ -167,11 +167,9 @@ def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> t
     x_t = x.t()
     i = torch.nn.init.eye(torch.cuda.FloatTensor(d,d))
     y = y_int.type(torch.cuda.FloatTensor)
-    # In the analytic solution, `lambda` really was `lambda * n`.
-    lmb_prime = n * lmb
 
     # formula
-    return (x_t.matmul(x) + lmb_prime*i).inverse().matmul(x_t).matmul(y)
+    return (x_t.matmul(x) + lmb*n*i).inverse().matmul(x_t).matmul(y)
 
 
 def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> torch.cuda.FloatTensor:

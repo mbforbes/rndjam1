@@ -127,12 +127,12 @@ Math reminders:
 
 ![math reminders](svg/math-reminders.svg)
 
-NB: While the derivative of a function **f** : ℝ<sup>n</sup> &rarr; ℝ is
-[technically a row
-vector](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant),
-people&trade; have decided that gradients of functions are column vectors,
-which is why I have transposes sprinkled below. (Thanks to Chris Xie for
-explaining this.)
+> NB: While the derivative of a function **f** : ℝ<sup>n</sup> &rarr; ℝ is
+> [technically a row
+> vector](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant),
+> people&trade; have decided that gradients of functions are column vectors,
+> which is why I have transposes sprinkled below. (Thanks to Chris Xie for
+> explaining this.)
 
 ### Ordinary least squares (OLS)
 
@@ -170,6 +170,14 @@ From here on out, I'l just always use per-datum averaged loss for the
 convenience of having a single loss function (though sometimes this will cause
 some constant smushing).
 
+> NB: For all regularization methods (e.g., ridge and lasso), shouldn't be
+> regularizing the weight corresponding to the bias term (I added as an extra
+> feature column of `1`s). You can remedy this by either (a) centering the `y`s
+> and omitting the bias term, or (b) removing the regularization of the bias
+> weight in the loss and gradient. I tried doing (b) but I think I failed (GD
+> wasn't getting nearly close enough to analytic loss), so I've left the
+> normalization in there for now (!).
+
 **Loss:**
 
 ![ridge loss](svg/ridge-loss.svg)
@@ -182,6 +190,11 @@ than above)
 ![ridge derivative](svg/ridge-derivative.svg)
 
 **Analytic:**
+
+> NB: I think some solutions combine _n_ into _λ_ because it looks cleaner. In
+> order to get the analytic solution and gradient (descent) to reach the same
+> solution, I needed to be consistent with how I applied _n_, so I've left it
+> in for completeness.
 
 ![ridge analytic](svg/ridge-analytic.svg)
 
@@ -211,9 +224,9 @@ Substitute in to get the final term for the (sub)gradient:
 
 ![lasso derivative part 3](svg/lasso-derivative-part3.svg)
 
-NB: There's no soft thresholding (sparsity-encouraging) property of LASSO when
-you use gradient descent. You need something like coordinate descent to get
-that.
+> NB: There's no soft thresholding (sparsity-encouraging) property of LASSO
+> when you use gradient descent. You need something like coordinate descent to
+> get that.
 
 ## Links
 

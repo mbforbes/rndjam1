@@ -4,15 +4,15 @@
 \newcommand{\X}{\matrix{X}}
 \newcommand{\y}{\vector{y}}
 \newcommand{\w}{\vector{w}}
-% ridge derivative
+% ridge analytic
 \begin{align*}
 0 &= \frac{\partial}{\partial \w} \mathcal{L}_{RR} (\X,\y,\w,\lambda) \\
 0 &= \frac{1}{n} 2(\y - \X\w)^T (-\X) + \lambda 2 \w^T \\
 n \lambda \w^T &= (\y - \X\w)^T \X \\
-\lambda \w^T &= \y^T\X - \w^T\X^T\X \quad \text{combining } n \text { into } \lambda \text{; simply scales choice of } \lambda \\
-\w^T (\X^T\X + \lambda \matrix{I}_d) &= \y^T\X \\
-\w^T (\X^T\X + \lambda \matrix{I}_d) (\X^T\X + \lambda \matrix{I}_d)^{-1} &= \y^T\X (\X^T\X + \lambda \matrix{I}_d)^{-1} \\
-\w^T &= \y^T\X (\X^T\X + \lambda \matrix{I}_d)^{-1} \\
-\w &= ((\X^T\X + \lambda \matrix{I}_d)^T)^{-1} \X^T\y \\
-\w &= (\X^T\X + \lambda \matrix{I}_d)^{-1} \X^T\y \\
+n \lambda \w^T &= \y^T\X - \w^T\X^T\X \\
+\w^T (\X^T\X + n \lambda \matrix{I}_d) &= \y^T\X \\
+\w^T (\X^T\X + n \lambda \matrix{I}_d) (\X^T\X + n \lambda \matrix{I}_d)^{-1} &= \y^T\X (\X^T\X + n \lambda \matrix{I}_d)^{-1} \\
+\w^T &= \y^T\X (\X^T\X + n \lambda \matrix{I}_d)^{-1} \\
+\w &= ((\X^T\X + n \lambda \matrix{I}_d)^T)^{-1} \X^T\y \\
+\w &= (\X^T\X + n \lambda \matrix{I}_d)^{-1} \X^T\y \\
 \end{align*}

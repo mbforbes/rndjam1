@@ -230,9 +230,10 @@ Substitute in to get the final term for the (sub)gradient:
 
 ## Links
 
-- [Wikipedia: Table of regularized least squares functions](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)
-- [The Matrix Cookbook](https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf)
-- [OLS with matrices notes (author unk)](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf)
+- [Table of regularized least squares functions (Wikipedia)](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)
+- [The Matrix Cookbook (Petersen & Pedersen)](https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf)
+- [OLS with matrices notes (possibly Rosenfeld?)](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf)
+- [Coordinate Descent (Gordon & Tibshirani)](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/25-coord-desc.pdf)
 
 ## Acknowledgements
 

@@ -42,7 +42,7 @@ GDSettings = Dict[str, float]
 # ordinary least squares (OLS)
 #
 
-def ols_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> float:
+def ols_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float = -1) -> float:
     """
     Returns ordinary least squares (OLS) loss, averaged per datum:
 
@@ -124,10 +124,31 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
     return (2/n)*(x.t().matmul(x.matmul(w) - y))
 
 
+def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor,
+        iters: int, report_interval: int = 1):
+    y = y_int.type(torch.cuda.FloatTensor)
+    n, d = x.size()
+    # initial w is drawn from gaussian(0, 1)
+    w = torch.randn(d).type(torch.cuda.FloatTensor)
+    w_next = torch.cuda.FloatTensor(d)
+
+
+    for iter_ in range(iters):
+        r = y - x.matmul(w)
+
+        if iter_ % report_interval == 0:
+            print('CD iter {}, loss = {}', iter_, ols_loss(w, x, y))
+
+        for j in range(d):
+            w_next[j] = w[j] + x[:,j].matmul(r) / x[:,j].pow(2).sum()
+        w = w_next
+
+    return w
+
+
 #
 # ridge regression
 #
-
 
 def ridge_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
     """
@@ -329,6 +350,11 @@ ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 10
 w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
 naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
 naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
+
+# OLS coordinate descent
+w = ols_coordinate_descent(train_x, train_y, 10)
+naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
+naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
 
 # ridge analytic solution
 for lmb in [0.2]:

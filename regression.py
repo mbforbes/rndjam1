@@ -140,7 +140,11 @@ def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTenso
             print('CD iter {}, loss = {}', iter_, ols_loss(w, x, y))
 
         for j in range(d):
-            w_next[j] = w[j] + x[:,j].matmul(r) / x[:,j].pow(2).sum()
+            norm = x[:,j].pow(2).sum()
+            if norm != 0.0:
+                w_next[j] = w[j] + x[:,j].matmul(r) / norm
+            else:
+                w_next[j] = 0
         w = w_next
 
     return w

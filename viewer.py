@@ -79,6 +79,10 @@ def plot_jitter(data: Dict[str, List[float]], win: str = 'my-scatter') -> None:
     })
 
 
+def plot_line(x: torch.Tensor, y: torch.Tensor, win: str = 'my-line') -> None:
+    vis.line(y, x, win=win, env=constants.VISDOM_ENV)
+
+
 def view_train_datum(n: int = 0):
     """
     Arguments:

@@ -6,6 +6,6 @@
 \newcommand{\w}{\vector{w}}
 % actual loss and derivative
 \begin{align*}
-\frac{\partial}{\partial \w} \mathcal{L}_{LS} (\X,\y,\w) &= \frac{\partial}{\partial \w} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \\
-&= -2\y^T\X + 2\w^T\X^T\X \\
+\frac{\partial}{\partial \w} \mathcal{L}_{LS} (\X,\y,\w) &= \frac{\partial}{\partial \w} \left[ \frac{1}{n} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \right] \\
+&= \frac{1}{n} (-2\y^T\X + 2\w^T\X^T\X) \\
 \end{align*}

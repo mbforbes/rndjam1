@@ -290,9 +290,6 @@ def gradient_descent_regression(
     for epoch in range(epochs):
         # NOTE: can adjust lr if desired
 
-        # compute loss
-        loss = loss_fn(w, x, y, lmb)
-
         # compute gradient
         grad = grad_fn(w, x, y, lmb)
 
@@ -302,7 +299,7 @@ def gradient_descent_regression(
         # maybe report
         if epoch % report_interval == 0:
             print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f}) (0 ws: {})'.format(
-                epoch, lr, loss, grad.norm(p=2), (w == 0).sum()))
+                epoch, lr, loss_fn(w, x, y, lmb), grad.norm(p=2), (w == 0).sum()))
 
     # give back final weights
     return w

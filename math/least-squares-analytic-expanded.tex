@@ -7,7 +7,7 @@
 % analytic solution
 \begin{align*}
 0 &= \frac{\partial}{\partial \w} \mathcal{L}_{LS} (\X,\y,\w) \\
-0 &= -2\y^T\X + 2\w^T\X^T\X \\
+0 &= \frac{1}{n} (-2\y^T\X + 2\w^T\X^T\X) \\
 \w^T\X^T\X &= \y^T\X \\
 \w^T\X^T\X(\X^T\X)^{-1} &= \y^T\X(\X^T\X)^{-1} \quad \text{ may need to use } (\X^T\X)^+ \\
 \w^T &= \y^T\X(\X^T\X)^{-1} \\

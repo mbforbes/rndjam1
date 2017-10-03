@@ -4,5 +4,6 @@
 \newcommand{\X}{\matrix{X}}
 \newcommand{\y}{\vector{y}}
 \newcommand{\w}{\vector{w}}
+\newcommand{\x}{\vector{x}}
 % actual loss
-\mathcal{L}_{LS}(\X,\y,\w) = \|\y - \X\w\|_2^2
+\mathcal{L}_{LS}(\X,\y,\w) = \frac{1}{n} \sum_{i=1}^n \mathcal{L}_{LS} (\x_i, y_i, \w) = \frac{1}{n} \sum_{i=1}^n \left( y_i - \x_i^T \w \right)^2 = \frac{1}{n} \|\y - \X\w\|_2^2

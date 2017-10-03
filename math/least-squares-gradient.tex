@@ -5,8 +5,7 @@
 \newcommand{\y}{\vector{y}}
 \newcommand{\w}{\vector{w}}
 \begin{align*}
-\frac{\partial}{\partial \w} \left[ \frac{1}{n} \mathcal{L}_{LS}(\X,\y,\w) \right] &= \frac{1}{n} \frac{\partial}{\partial \w} \left[ \mathcal{L}_{LS}(\X,\y,\w) \right] \\
-&= \frac{1}{n} \left( -2\y^T\X + 2\w^T\X^T\X \right) \\
+\frac{\partial}{\partial \w} \mathcal{L}_{LS}(\X,\y,\w) &= \frac{1}{n} \left( -2\y^T\X + 2\w^T\X^T\X \right) \\
 &= \frac{2}{n} \left( \w^T\X^T\X - \y^T\X \right) \\
 &= \frac{2}{n} \left( \X^T\X\w - \X^T\y \right) \quad \text{ transpose to get column vector} \\
 &= \frac{2}{n} \X^T (\X\w - \y) \\

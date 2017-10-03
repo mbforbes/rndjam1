@@ -2,6 +2,12 @@
 \newcommand{\vector}[1]{\mathbf{#1}}
 \DeclareMathOperator{\sgn}{sgn}
 \begin{align*}
+% Matrix index notation
+X_{ij} &= \text{element at } i\text{th row, } j\text{th column of matrix } \matrix{X} \\
+% Matrix row notation
+\matrix{X}_i &= i\text{th row of matrix } \underset{n \times d}{\matrix{X}} = \left[ X_{i1}, X_{i2}, \ldots, X_{id} \right] \\
+% Matrix column notation
+\matrix{X}^j &= j\text{th column of matrix } \underset{n \times d}{\matrix{X}} = \left[ X_{1j}, X_{2j}, \ldots, X_{nj} \right]^T \\
 % L_p norm
 \|\underset{n}{\vector{x}}\|_p &= \left( |x_1|^p + |x_2|^p + \cdots + |x_n|^p \right)^\frac{1}{p} \\
 % special case for L_2 norm squared

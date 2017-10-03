@@ -123,7 +123,7 @@ Definitions:
 
 ![definitions](svg/definitions.svg)
 
-Math reminders:
+Math reminders and my notation choices:
 
 ![math reminders](svg/math-reminders.svg)
 
@@ -134,17 +134,20 @@ Math reminders:
 > which is why I have transposes sprinkled below. (Thanks to Chris Xie for
 > explaining this.)
 
-### Ordinary least squares (OLS)
+### Ordinary least squares (LS)
 
-Dataset **loss**:
+**Loss** (average per datum):
 
 ![least squares loss](svg/least-squares-loss.svg)
 
-Expanding out for my noob math:
+Using the average loss per datum is nice because it is invariant of the dataset
+(or (mini)batch) size, which will come into play when we do gradient
+descent. Expanding the loss function out for my noob math:
 
 ![least squares loss expanded](svg/least-squares-loss-expanded.svg)
 
-Taking the **derivative** of the loss function with respect to the weights:
+Taking the **derivative** of the loss function with respect to the **weight
+vector**:
 
 ![least squares loss expanded derivative](svg/least-squares-loss-expanded-derivative.svg)
 
@@ -153,34 +156,30 @@ We can set the gradient equal to 0 (the zero vector) and solve for the
 
 ![least squares analytic expanded](svg/least-squares-analytic-expanded.svg)
 
-To do gradient descent instead, we'll use the gradient of the average loss per
-datum. The average loss per datum is nice because it's invariant to the size of
-the dataset (or (mini)batch). The **average loss per datum** is simply:
-
-![least squares average loss](svg/least-squares-average-loss.svg)
-
-We can just take scale the gradient that we got previously to get our
+Doing a little bit of algebra to clean up the gradient, we'll get our
 **gradient for gradient descent**:
 
 ![least squares gradient](svg/least-squares-gradient.svg)
 
-### Ridge regression
+To instead do **coordinate descent**, we optimize a single coordinate at a
+time, keeping all others fixed. We take the **derivative** of the loss function
+with respect to a **single weight**:
 
-From here on out, I'l just always use per-datum averaged loss for the
-convenience of having a single loss function (though sometimes this will cause
-some constant smushing).
+(TODO)
 
-> NB: For all regularization methods (e.g., ridge and lasso), shouldn't be
+### Ridge regression (RR)
+
+**Loss:**
+
+![ridge loss](svg/ridge-loss.svg)
+
+> NB: For all regularization methods (e.g., ridge and lasso), we shouldn't be
 > regularizing the weight corresponding to the bias term (I added as an extra
 > feature column of `1`s). You can remedy this by either (a) centering the `y`s
 > and omitting the bias term, or (b) removing the regularization of the bias
 > weight in the loss and gradient. I tried doing (b) but I think I failed (GD
 > wasn't getting nearly close enough to analytic loss), so I've left the
 > normalization in there for now (!).
-
-**Loss:**
-
-![ridge loss](svg/ridge-loss.svg)
 
 **Derivative:**
 

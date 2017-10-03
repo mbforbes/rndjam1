@@ -6,10 +6,10 @@
 \newcommand{\w}{\vector{w}}
 % actual loss
 \begin{align*}
-\mathcal{L}_{LS}(\X,\y,\w) &= \|\y - \X\w\|_2^2 \\
+\mathcal{L}_{LS}(\X,\y,\w) &= \frac{1}{n} \|\y - \X\w\|_2^2 \\
 % expansion
-&= (\y - \X\w)^T (\y - \X\w) \\
-&= (\y^T - (\X\w)^T) (\y - \X\w) \\
-&= \y^T\y - \y^T\X\w - (\X\w)^T\y + (\X\w)^T\X\w \\
-&= \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w
+&= \frac{1}{n} (\y - \X\w)^T (\y - \X\w) \\
+&= \frac{1}{n} (\y^T - (\X\w)^T) (\y - \X\w) \\
+&= \frac{1}{n} \left( \y^T\y - \y^T\X\w - (\X\w)^T\y + (\X\w)^T\X\w \right) \\
+&= \frac{1}{n} \left( \y^T\y - 2\y^T\X\w + \w^T\X^T\X\w \right) \\
 \end{align*}

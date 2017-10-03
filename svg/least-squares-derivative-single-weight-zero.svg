@@ -1,4 +1,4 @@
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="59.147ex" height="27.843ex" style="vertical-align: -13.338ex;" viewBox="0 -6245 25465.9 11987.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="59.147ex" height="33.509ex" style="vertical-align: -16.171ex;" viewBox="0 -7464.9 25465.9 14427.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
 <title id="MathJax-SVG-1-Title">% preamble
 \newcommand{\matrix}[1]{\mathbf{#1}}
 \newcommand{\vector}[1]{\mathbf{#1}}
@@ -7,6 +7,7 @@
 \newcommand{\w}{\vector{w}}
 \begin{align*}
 0 &amp;= \frac{\partial}{\partial w_j} \mathcal{L}_{LS}(\X,\y,\w) \\
+0 &amp;= \frac{2}{n} (\X^j)^T (\X \w - \y) \\
 0 &amp;= \frac{2}{n} (\X^j)^T (\X^{-j} \w_{-j} + \X^j w_j - \y) \\
 0 &amp;= \frac{2}{n} \left( (\X^j)^T \X^{-j} \w_{-j} + (\X^j)^T \X^j w_j - (\X^j)^T \y \right) \\
 (\X^j)^T \X^j w_j &amp;= (\X^j)^T \y - (\X^j)^T \X^{-j} \w_{-j} \\
@@ -39,10 +40,11 @@ w_j &amp;= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
 <g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
 <g transform="translate(167,0)">
 <g transform="translate(-11,0)">
- <use xlink:href="#E2-MJMAIN-30" x="4507" y="4756"></use>
- <use xlink:href="#E2-MJMAIN-30" x="4507" y="2083"></use>
- <use xlink:href="#E2-MJMAIN-30" x="4507" y="-259"></use>
-<g transform="translate(0,-2149)">
+ <use xlink:href="#E2-MJMAIN-30" x="4507" y="5927"></use>
+ <use xlink:href="#E2-MJMAIN-30" x="4507" y="3253"></use>
+ <use xlink:href="#E2-MJMAIN-30" x="4507" y="912"></use>
+ <use xlink:href="#E2-MJMAIN-30" x="4507" y="-1430"></use>
+<g transform="translate(0,-3320)">
  <use xlink:href="#E2-MJMAIN-28" x="0" y="0"></use>
 <g transform="translate(389,0)">
  <use xlink:href="#E2-MJMAINB-58" x="0" y="0"></use>
@@ -61,13 +63,13 @@ w_j &amp;= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
  <use transform="scale(0.707)" xlink:href="#E2-MJMATHI-6A" x="1013" y="-213"></use>
 </g>
 </g>
-<g transform="translate(3899,-4441)">
+<g transform="translate(3899,-5611)">
  <use xlink:href="#E2-MJMATHI-77" x="0" y="0"></use>
  <use transform="scale(0.707)" xlink:href="#E2-MJMATHI-6A" x="1013" y="-213"></use>
 </g>
 </g>
 <g transform="translate(4997,0)">
-<g transform="translate(0,4756)">
+<g transform="translate(0,5927)">
  <use xlink:href="#E2-MJMAIN-3D" x="277" y="0"></use>
 <g transform="translate(1056,0)">
 <g transform="translate(397,0)">
@@ -97,7 +99,32 @@ w_j &amp;= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
  <use xlink:href="#E2-MJMAINB-77" x="7855" y="0"></use>
  <use xlink:href="#E2-MJMAIN-29" x="8686" y="0"></use>
 </g>
-<g transform="translate(0,2083)">
+<g transform="translate(0,3253)">
+ <use xlink:href="#E2-MJMAIN-3D" x="277" y="0"></use>
+<g transform="translate(1056,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="720" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E2-MJMAIN-32" x="110" y="676"></use>
+ <use xlink:href="#E2-MJMATHI-6E" x="60" y="-686"></use>
+</g>
+</g>
+ <use xlink:href="#E2-MJMAIN-28" x="2294" y="0"></use>
+<g transform="translate(2684,0)">
+ <use xlink:href="#E2-MJMAINB-58" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-MJMATHI-6A" x="1229" y="585"></use>
+</g>
+<g transform="translate(3945,0)">
+ <use xlink:href="#E2-MJMAIN-29" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-MJMATHI-54" x="550" y="583"></use>
+</g>
+ <use xlink:href="#E2-MJMAIN-28" x="4932" y="0"></use>
+ <use xlink:href="#E2-MJMAINB-58" x="5322" y="0"></use>
+ <use xlink:href="#E2-MJMAINB-77" x="6191" y="0"></use>
+ <use xlink:href="#E2-MJMAIN-2212" x="7245" y="0"></use>
+ <use xlink:href="#E2-MJMAINB-79" x="8246" y="0"></use>
+ <use xlink:href="#E2-MJMAIN-29" x="8853" y="0"></use>
+</g>
+<g transform="translate(0,912)">
  <use xlink:href="#E2-MJMAIN-3D" x="277" y="0"></use>
 <g transform="translate(1056,0)">
 <g transform="translate(397,0)">
@@ -143,7 +170,7 @@ w_j &amp;= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
  <use xlink:href="#E2-MJMAINB-79" x="13722" y="0"></use>
  <use xlink:href="#E2-MJMAIN-29" x="14330" y="0"></use>
 </g>
-<g transform="translate(0,-259)">
+<g transform="translate(0,-1430)">
  <use xlink:href="#E2-MJMAIN-3D" x="277" y="0"></use>
 <g transform="translate(1056,0)">
 <g transform="translate(397,0)">
@@ -211,7 +238,7 @@ w_j &amp;= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
  <use xlink:href="#E2-MJSZ1-29" x="17381" y="-1"></use>
 </g>
 </g>
-<g transform="translate(0,-2149)">
+<g transform="translate(0,-3320)">
  <use xlink:href="#E2-MJMAIN-3D" x="277" y="0"></use>
  <use xlink:href="#E2-MJMAIN-28" x="1334" y="0"></use>
 <g transform="translate(1723,0)">
@@ -248,7 +275,7 @@ w_j &amp;= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
 </g>
 </g>
 </g>
-<g transform="translate(0,-4441)">
+<g transform="translate(0,-5611)">
  <use xlink:href="#E2-MJMAIN-3D" x="277" y="0"></use>
 <g transform="translate(1056,0)">
 <g transform="translate(397,0)">

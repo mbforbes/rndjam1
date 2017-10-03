@@ -1,0 +1,13 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\begin{align*}
+0 &= \frac{\partial}{\partial w_j} \mathcal{L}_{LS}(\X,\y,\w) \\
+0 &= \frac{2}{n} (\X^j)^T (\X^{-j} \w_{-j} + \X^j w_j - \y) \\
+0 &= \frac{2}{n} \left( (\X^j)^T \X^{-j} \w_{-j} + (\X^j)^T \X^j w_j - (\X^j)^T \y \right) \\
+(\X^j)^T \X^j w_j &= (\X^j)^T \y - (\X^j)^T \X^{-j} \w_{-j} \\
+w_j &= \frac{(\X^j)^T (\y - \X^{-j} \w_{-j} )}{\|\X^j\|_2^2} \\
+\end{align*}

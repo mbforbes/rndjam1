@@ -165,7 +165,46 @@ To instead do **coordinate descent**, we optimize a single coordinate at a
 time, keeping all others fixed. We take the **derivative** of the loss function
 with respect to a **single weight**:
 
-(TODO)
+![least squares derivative single weight](svg/least-squares-derivative-single-weight.svg)
+
+Setting the derivative equal to zero, we can solve for the optimal value for
+that single weight:
+
+![least squares derivative single weight zero](svg/least-squares-derivative-single-weight-zero.svg)
+
+However, this is an expensive update to a single weight. We can speed this up.
+If we define,
+
+![least squares residual](svg/least-squares-residual.svg)
+
+then we can rewrite the inner term,
+
+![least squares residual rewrite](svg/least-squares-residual-rewrite.svg)
+
+and, using `(t)` and `(t+1)` to clarify old and new values for the weight,
+rewrite the single weight optimum as:
+
+![least squares coord descent](svg/least-squares-coord-descent.svg)
+
+After updating that weight, **r** is immediately stale, so we must update it as
+well:
+
+![least squares coord descent r update](svg/least-squares-coord-descent-r-update.svg)
+
+We can compute an initial **r** and we can precompute all of the column norms
+(the denominator) because they do not change. That means that each weight
+update involves just the _n_-dimensional vector dot product (the numerator) and
+updating **r** (_n_-dimensional operations). Because of this, one full round of
+coordinate descent (updating all weight coordinates once) is said to have the
+same update time complexity as one step of gradient descent (`O(nd)`).
+
+However, I found that in practice, one step of (vanilla) gradient descent is
+much faster. I think this is because my implementation of coordinate descent
+requires moving values to and from the GPU (for bookkeeping old values),
+whereas gradient descent can run entirely on the GPU. I'm not sure if I can
+remedy this. With that said, coordinate descent converges with 10x fewer
+iterations.
+
 
 ### Ridge regression (RR)
 

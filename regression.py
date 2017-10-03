@@ -35,6 +35,7 @@ IntTensor = Union[torch.IntTensor, torch.cuda.IntTensor]
 LossFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], float]
 GradientFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], FloatTensor]
 GDSettings = Dict[str, float]
+CDSettings = Dict[str, int]
 
 # functions
 # ---
@@ -70,7 +71,7 @@ def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Flo
 
     See the README section for the derivation:
 
-        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ols
+        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ls
 
     Arguments:
         x: 2D (N x D) tensor
@@ -105,7 +106,7 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
 
     See the README section for the derivation:
 
-        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ols
+        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ls
 
     Note that the gradient is a vector:
 
@@ -126,7 +127,24 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
 
 
 def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor,
-        iters: int, report_interval: int = 1):
+        settings: CDSettings) -> torch.cuda.FloatTensor:
+    """
+    Runs OLS coordinate descent.
+
+    See the README section for the derivation:
+
+        https://github.com/mbforbes/rndjam1#ordinary-least-squares-ls
+
+    Arguments:
+        x: 2d (N x D) input data
+        y: 1d (D) target labels
+        settings: 'epochs' and 'report_interval'
+
+    Returns:
+        w: 1d (D) weights
+    """
+    epochs = settings['epochs']
+    report_interval = settings['report_interval']
     y = y_int.type(torch.cuda.FloatTensor)
     n, d = x.size()
     # initial w is drawn from gaussian(0, 1)
@@ -137,20 +155,21 @@ def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTenso
 
     # compute initial residual
     r = y - x.matmul(w)
-    for iter_ in range(iters):
-        if iter_ % report_interval == 0:
-            print('CD iter {}, loss = {}'.format(iter_, ols_loss(w, x, y)))
+
+    # iterate
+    for epoch in range(epochs):
+        if epoch % report_interval == 0:
+            print('CD iter {}, loss = {}'.format(epoch, ols_loss(w, x, y)))
 
         for j in range(d):
-            # j'th col of x times w_j gives col/weight old contribution to r
             w_j_old = w[j]
 
             # update j (avoiding divde by zero)
             norm = col_l2s[j]
             w[j] = w[j] + x[:,j].matmul(r) / norm if norm != 0.0 else 0.0
 
-            # j'th col of x times w_j gives col/weight new contribution to r
-            r -= x[:,j] * (w[j] - w_j_old)
+            # update residual
+            r += (w_j_old - w[j]) * x[:,j]
     return w
 
 
@@ -181,7 +200,7 @@ def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> t
     """
     See the README section for the derivation:
 
-        https://github.com/mbforbes/rndjam1#ridge-regression
+        https://github.com/mbforbes/rndjam1#ridge-regression-rr
 
     Arguments:
         x: 2D (N x D) input data
@@ -205,7 +224,7 @@ def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
     """
     See the README section for the derivation:
 
-        https://github.com/mbforbes/rndjam1#ridge-regression
+        https://github.com/mbforbes/rndjam1#ridge-regression-rr
 
     Arguments:
         w: 1D (D) weights of linear estimator
@@ -357,7 +376,7 @@ naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
 naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
 # OLS coordinate descent
-w = ols_coordinate_descent(train_x, train_y, 100, 10)
+w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
 naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
 naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
 

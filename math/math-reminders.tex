@@ -2,12 +2,6 @@
 \newcommand{\vector}[1]{\mathbf{#1}}
 \DeclareMathOperator{\sgn}{sgn}
 \begin{align*}
-% Matrix index notation
-X_{ij} &= \text{element at } i\text{th row, } j\text{th column of matrix } \matrix{X} \\
-% Matrix row notation
-\matrix{X}_i &= i\text{th row of matrix } \underset{n \times d}{\matrix{X}} = \left[ X_{i1}, X_{i2}, \ldots, X_{id} \right] \\
-% Matrix column notation
-\matrix{X}^j &= j\text{th column of matrix } \underset{n \times d}{\matrix{X}} = \left[ X_{1j}, X_{2j}, \ldots, X_{nj} \right]^T \\
 % L_p norm
 \|\underset{n}{\vector{x}}\|_p &= \left( |x_1|^p + |x_2|^p + \cdots + |x_n|^p \right)^\frac{1}{p} \\
 % special case for L_2 norm squared
@@ -29,4 +23,18 @@ X_{ij} &= \text{element at } i\text{th row, } j\text{th column of matrix } \matr
 \end{cases} \\
 % sgn function, applied to a vector
 \sgn(\underset{n}{\vector{x}}) &= \left[ \sgn(x_1), \sgn(x_2), \ldots, \sgn(x_n) \right] \\
+% Matrix index notation
+X_{ij} &= \text{element at } i\text{th row, } j\text{th column of matrix } \matrix{X} \\
+% Matrix row notation
+\matrix{X}_i &= i\text{th row of matrix } \underset{n \times d}{\matrix{X}} = \left[ X_{i1}, X_{i2}, \ldots, X_{id} \right] \\
+% Matrix column notation
+\matrix{X}^j &= j\text{th column of matrix } \underset{n \times d}{\matrix{X}} = \left[ X_{1j}, X_{2j}, \ldots, X_{nj} \right]^T \\
+% Matrix row removed notation
+\matrix{X}_{-i} &= \text{matrix } \underset{n \times d}{\matrix{X}} \text{ with } i\text{th row removed. Dimensions: } \underset{n-1 \times d}{\matrix{X}_{-i}} \\
+% Matrix column removed notation
+\matrix{X}^{-j} &= \text{matrix } \underset{n \times d}{\matrix{X}} \text{ with } j\text{th column removed. Dimensions: } \underset{n \times d-1}{\matrix{X}^{-j}} \\
+% Matrix row removed notation
+\vector{x}_{-i} &= \text{vector } \underset{n}{\matrix{x}} \text{ with } i\text{th entry removed. Dimensions: } \underset{n-1}{\vector{x}_{-i}} \\
+% Time notation
+x^{(t)} &= x \text{ at timestep } t \text{ in some algorithm}
 \end{align*}

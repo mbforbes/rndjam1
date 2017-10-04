@@ -31,23 +31,23 @@ def which_exist(filenames: List[str]) -> List[str]:
     return list(filter(lambda f: os.path.exists(f), filenames))
 
 
-def split_tensor(data: torch.Tensor, label_cols: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def split_tensor(data: torch.Tensor, classes: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
     Splits 'all data' tensor into labels and features tensors.
 
     Returns 2-tuple of:
-        (1) either a 1d (N) vector (if label_cols == 1),
-                or a 2d (N x L) matrix (if label_cols > 1)
+        (1) either a 1d (N) vector (if classes == 1),
+                or a 2d (N x L) matrix (if classes > 1)
         (2) a 2d (N x D) matrix of datums x features
     """
     # have to be careful when selecting one column:
     # - selecting data[:, 0]  gives a 1d (N) vector
     # - selecting data[:, :1] gives a 2d (N x 1) matrix
-    if label_cols == 1:
+    if classes == 1:
         labels = data[:, 0].type(torch.IntTensor)
     else:
-        labels = data[:, :label_cols].type(torch.IntTensor)
-    features = data[:, label_cols:]
+        labels = data[:, :classes].type(torch.IntTensor)
+    features = data[:, classes:]
     return labels, features
 
 
@@ -95,17 +95,17 @@ def bin_to_tensor(filename: str) -> torch.Tensor:
     return torch.load(filename)
 
 
-def bin_to_tensors(filename: str, label_cols: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def bin_to_tensors(filename: str, classes: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
     Loads data from filename in torch.save(...) format; return label
-    (label_cols) and features (rest) tensors.
+    (classes) and features (rest) tensors.
 
     Returns 2-tuple of:
-        (1) either a 1d (N) vector (if label_cols == 1),
-                or a 2d (N x L) matrix (if label_cols > 1)
+        (1) either a 1d (N) vector (if classes == 1),
+                or a 2d (N x L) matrix (if classes > 1)
         (2) a 2d (N x D) matrix of datums x features
     """
-    return split_tensor(bin_to_tensor(filename), label_cols)
+    return split_tensor(bin_to_tensor(filename), classes)
 
 
 def bias_tensor(t: torch.Tensor) -> torch.Tensor:
@@ -123,21 +123,21 @@ def bias_tensor(t: torch.Tensor) -> torch.Tensor:
     return torch.cat([t, bias_col], dim=1)
 
 
-def labels_to_onehot(labels: torch.IntTensor, opts: int) -> torch.IntTensor:
+def labels_to_onehot(labels: torch.IntTensor, classes: int) -> torch.IntTensor:
     """
-    Turns 1d (N) class-label tensor `labels` into 2d (N x opts) onehot tensor
-    and returns it.
+    Turns 1d (N) class-label tensor `labels` into 2d (N x classes) onehot
+    tensor and returns it.
 
     Arguments:
         labels: 1d (N) vector of class labels
-        opts: number of class label options (will be output cols)
+        classes: number of class label options (will be output cols)
 
     Returns:
-        2d (N x opts) onehot label matrix
+        2d (N x classes) onehot label matrix
     """
     n, = labels.size()
     label_idx = labels.type(torch.LongTensor).view(-1,1)
-    return torch.IntTensor(n, opts).zero_().scatter_(1, label_idx, 1)
+    return torch.IntTensor(n, classes).zero_().scatter_(1, label_idx, 1)
 
 
 # script

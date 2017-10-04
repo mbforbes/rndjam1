@@ -419,6 +419,11 @@ def gradient_descent_regression(
     return w
 
 
+def report(method_name: str, corr: int, total: int, loss: float) -> None:
+    print('{} accuracy: {}/{} ({}%)'.format(
+        method_name, corr, total, round((corr/total)*100, 2)))
+    print('{} average loss: {}'.format(method_name, loss))
+
 def naive_regression_eval(
         method_name: str, w: FloatTensor, x: FloatTensor, y: IntTensor,
         lmb: float, loss_fn: LossFn) -> None:
@@ -434,71 +439,125 @@ def naive_regression_eval(
     # for correct count, see how often the rounded predicted value matches gold
     corr = (y_hat.round().type(IntTT) == y).sum()
 
-    # for loss, compute sum of squared residuals
+    # for loss, compute sum of squared residuals + some regularization (maybe)
     loss = loss_fn(w, x, y.type(FloatTT), lmb)
 
-    total = len(y)
-    print('{} accuracy: {}/{} ({}%)'.format(
-        method_name, corr, total, round((corr/total)*100, 2)))
-    print('{} average loss: {}'.format(method_name, loss))
+    report('[naive] {}'.format(method_name), corr, len(y), loss)
+
+
+def multi_regression_eval(
+        method_name: str, w: FloatTensor, x: FloatTensor, y: IntTensor,
+        lmb: float, loss_fn: LossFn) -> None:
+    """
+    Arguments:
+        w: 2d (D x C) weights of linear estimator
+        x: 2D (N x D) input data
+        y: 1D (D x C) target labels
+    """
+    # predict
+    y_hat = x.matmul(w)
+
+    # max(dim) returns both values and indices. compare best indices from
+    # predictions and gold (which are just onehot)
+    _, pred_idxes = y_hat.max(1)
+    _, gold_idxes = y.max(1)
+    corr = (pred_idxes == gold_idxes).sum()
+
+    # SSE + R(w, lmb)
+    loss = loss_fn(w, x, y.type(FloatTT), lmb)
+
+    report('[multi] {}'.format(method_name), corr, len(y), loss)
+
+
+def naive():
+    """
+    Regress to scalar value, e.g. the image of "5" goes to the number 5.
+    """
+    # load
+    print('Loading data...')
+    train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_BIAS)
+    val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_BIAS)
+
+    print('Moving data to GPU...')
+    train_y = train_y_cpu.type(IntTT)
+    train_x = train_x_cpu.type(FloatTT)
+    val_y = val_y_cpu.type(IntTT)
+    val_x = val_x_cpu.type(FloatTT)
+
+    print('Starting experiments...')
+    dummy = 0.0
+
+    # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+    w = ols_analytic(train_x_cpu, train_y_cpu)
+    naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+    naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
+
+    # OLS gradient descent
+    ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
+    w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+    naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+    naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
+
+    # OLS coordinate descent
+    w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
+    naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
+    naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
+
+    # ridge analytic solution
+    for lmb in [0.2]:
+        w = ridge_analytic(train_x, train_y, lmb)
+        # code.interact(local=dict(globals(), **locals()))
+        naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+        naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+
+    # ridge GD
+    ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
+    for lmb in [0.2]:
+        w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
+        naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+        naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+
+    # lasso GD
+    lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
+    for lmb in [0.2]:
+        w = gradient_descent_regression(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
+        naive_regression_eval('Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
+        naive_regression_eval('Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
+
+    # lasso CD
+    lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
+    for lmb in [0.2]:
+        w = lasso_coordinate_descent(train_x, train_y, lmb, lasso_cd_settings)
+        naive_regression_eval('Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
+        naive_regression_eval('Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
+
+
+def multi():
+    """
+    Regress to 10 binary-valued classes at once, e.g., the image of "5" goes to
+    [0, 0, 0, 0, 1, 0, 0, 0, 0].
+    """
+    # load
+    print('Loading data...')
+    train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_ONEHOT, 10)
+    val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_ONEHOT, 10)
+
+    print('Moving data to GPU...')
+    train_y = train_y_cpu.type(IntTT)
+    train_x = train_x_cpu.type(FloatTT)
+    val_y = val_y_cpu.type(IntTT)
+    val_x = val_x_cpu.type(FloatTT)
+
+    print('Starting experiments...')
+    dummy = 0.0
+
+    # OLS analytic solution. uses CPU tensors to go to/from numpy for
+    # pseudoinverse.
+    w = ols_analytic(train_x_cpu, train_y_cpu)
+    multi_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+    multi_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 
 
 # execution starts here
-
-# load
-print('Loading data...')
-train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_BIAS)
-val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_BIAS)
-
-print('Moving data to GPU...')
-train_y = train_y_cpu.type(IntTT)
-train_x = train_x_cpu.type(FloatTT)
-val_y = val_y_cpu.type(IntTT)
-val_x = val_x_cpu.type(FloatTT)
-
-print('Starting experiments...')
-dummy = 0.0
-
-# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-w = ols_analytic(train_x_cpu, train_y_cpu)
-naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
-
-# OLS gradient descent
-ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
-w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
-
-# OLS coordinate descent
-w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
-naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
-
-# ridge analytic solution
-for lmb in [0.2]:
-    w = ridge_analytic(train_x, train_y, lmb)
-    # code.interact(local=dict(globals(), **locals()))
-    naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-    naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
-
-# ridge GD
-ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
-for lmb in [0.2]:
-    w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
-    naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-    naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
-
-# lasso GD
-lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
-for lmb in [0.2]:
-    w = gradient_descent_regression(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
-    naive_regression_eval('Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
-    naive_regression_eval('Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
-
-# lasso CD
-lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
-for lmb in [0.2]:
-    w = lasso_coordinate_descent(train_x, train_y, lmb, lasso_cd_settings)
-    naive_regression_eval('Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
-    naive_regression_eval('Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
+# naive()
+multi()

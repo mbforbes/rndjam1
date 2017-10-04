@@ -16,6 +16,7 @@ Know when to use the following:
 # builtins
 import code
 from typing import Tuple, Dict, Union, Callable
+from mypy_extensions import TypedDict
 
 # 3rd party
 import numpy as np
@@ -34,11 +35,36 @@ FloatTensor = Union[torch.FloatTensor, torch.cuda.FloatTensor]
 IntTensor = Union[torch.IntTensor, torch.cuda.IntTensor]
 LossFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], float]
 GradientFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], FloatTensor]
-GDSettings = Dict[str, float]
-CDSettings = Dict[str, int]
+class GDSettings(TypedDict):
+    lr: float
+    epochs: int
+    report_interval: int
+class CDSettings(TypedDict):
+    epochs: int
+    report_interval: int
 
 # functions
 # ---
+
+#
+# util (consider pulling out)
+#
+
+def soft_thresh(x: float, lmb: float) -> float:
+    """
+    This is a scalar version of torch.nn.functional.softshrink.
+
+              x + lmb  if  x  <   -lmb
+    Returns   0        if  x \in [-lmb, lmb]
+              x - lmb  if  x  >    lmb
+    """
+    if x < lmb:
+        return x + lmb
+    elif x > lmb:
+        return x - lmb
+    else:
+        return 0.0
+
 
 #
 # ordinary least squares (OLS)
@@ -159,9 +185,10 @@ def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTenso
     # iterate
     for epoch in range(epochs):
         if epoch % report_interval == 0:
-            print('CD iter {}, loss = {}'.format(epoch, ols_loss(w, x, y)))
+            print('OLS CD iter {}, loss = {}'.format(epoch, ols_loss(w, x, y)))
 
         for j in range(d):
+            # save old val for redisual update
             w_j_old = w[j]
 
             # update j (avoiding divde by zero)
@@ -280,6 +307,61 @@ def lasso_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
     n, d = x.size()
     return (2/n)*(x.t().matmul(x.matmul(w) - y)) + lmb*w.sign()
 
+
+def lasso_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor,
+        lmb: float, settings: CDSettings) -> torch.cuda.FloatTensor:
+    """
+    Runs lasso coordinate descent.
+
+    See the README section for the derivation (still TODO):
+
+        https://github.com/mbforbes/rndjam1#lasso
+
+    TODO: refactor with ols coordinate descent once this is working.
+
+    Arguments:
+        x: 2d (N x D) input data
+        y: 1d (D) target labels
+        settings: 'epochs' and 'report_interval'
+
+    Returns:
+        w: 1d (D) weights
+    """
+    epochs = settings['epochs']
+    report_interval = settings['report_interval']
+    y = y_int.type(torch.cuda.FloatTensor)
+    n, d = x.size()
+    w = torch.randn(d).type(torch.cuda.FloatTensor)  # N(0,1)
+
+    # precompute sq l2 column norms (don't change as x stays fixed)
+    col_l2s = x.pow(2).sum(0)
+
+    # compute initial residual
+    r = y - x.matmul(w)
+
+    # iterate
+    for epoch in range(epochs):
+        # maybe report
+        if epoch % report_interval == 0:
+            print('lasso CD epoch {}, loss: {:.4f} (0 ws: {})'.format(
+                epoch, lasso_loss(w, x, y, lmb), (w == 0).sum()))
+
+        for j in range(d):
+            # save old val for redisual update
+            w_j_old = w[j]
+
+            # compute new weight value
+            if col_l2s[j] != 0.0:
+                rho = x[:,j].matmul(r + w[j]*x[:,j])
+                z = (n * lmb) / 2
+                w[j] = soft_thresh(rho, z) / col_l2s[j]
+            else:
+                w[j] = 0.0
+
+            # update residual
+            r += (w_j_old - w[j]) * x[:,j]
+    return w
+
 #
 # general
 #
@@ -297,8 +379,8 @@ def gradient_descent_regression(
     """
     # extract GD settings
     lr = settings['lr']
-    epochs = int(settings['epochs'])
-    report_interval = int(settings['report_interval'])
+    epochs = settings['epochs']
+    report_interval = settings['report_interval']
 
     # setup
     y = y_int.type(torch.cuda.FloatTensor)
@@ -364,21 +446,21 @@ val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
 print('Starting experiments...')
 dummy = 0.0
 
-# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-w = ols_analytic(train_x_cpu, train_y_cpu)
-naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
+# # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+# w = ols_analytic(train_x_cpu, train_y_cpu)
+# naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 
-# OLS gradient descent
-ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
-w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
+# # OLS gradient descent
+# ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
+# w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+# naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
-# OLS coordinate descent
-w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
-naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
-naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
+# # OLS coordinate descent
+# w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
+# naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
+# naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
 
 # # ridge analytic solution
 # for lmb in [0.2]:
@@ -400,3 +482,10 @@ naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_lo
 #     w = gradient_descent_regression(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
 #     naive_regression_eval('Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
 #     naive_regression_eval('Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
+
+# lasso CD
+lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
+for lmb in [0.2]:
+    w = lasso_coordinate_descent(train_x, train_y, lmb, lasso_cd_settings)
+    naive_regression_eval('Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
+    naive_regression_eval('Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)

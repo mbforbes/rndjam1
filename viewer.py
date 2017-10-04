@@ -79,8 +79,19 @@ def plot_jitter(data: Dict[str, List[float]], win: str = 'my-scatter') -> None:
     })
 
 
-def plot_line(x: torch.Tensor, y: torch.Tensor, win: str = 'my-line') -> None:
-    vis.line(y, x, win=win, env=constants.VISDOM_ENV)
+def plot_line(x: torch.Tensor, ys: torch.Tensor, legend: List[str] = [], win: str = 'my-line') -> None:
+    """
+    Arguments:
+        x:  1d (N) x values
+        ys: 1d (N) y values, or
+            2d (M x N) y values for M lines, one row per line
+    """
+    if len(ys.size()) > 1:
+        ys = ys.t()
+    vis.line(ys, x, win=win, env=constants.VISDOM_ENV, opts={
+        'title': win,
+        'legend': legend,
+    })
 
 
 def view_train_datum(n: int = 0):

@@ -29,6 +29,7 @@ pip install visdom
 
 # editor setup. for vscode:
 pip install mypy
+pip install mypy-extensions
 # then in vs code:
 # (1) use command `Python: Select Workspace Interpreter` and pick rndj1
 # (2) in settings, disable pylint and prospector; enable mypy
@@ -173,11 +174,11 @@ that single weight:
 ![least squares derivative single weight zero](svg/least-squares-derivative-single-weight-zero.svg)
 
 However, this is an expensive update to a single weight. We can speed this up.
-If we define,
+If we define the residual,
 
 ![least squares residual](svg/least-squares-residual.svg)
 
-then we can rewrite the inner term,
+then we can rewrite the inner term above as,
 
 ![least squares residual rewrite](svg/least-squares-residual-rewrite.svg)
 
@@ -242,6 +243,8 @@ than above)
 
 ![ridge gradient](svg/ridge-gradient.svg)
 
+> NB: Skipping ridge coordinate descent for sake of time.
+
 ### Lasso
 
 **Loss:**
@@ -264,7 +267,11 @@ Substitute in to get the final term for the (sub)gradient:
 
 > NB: There's no soft thresholding (sparsity-encouraging) property of LASSO
 > when you use gradient descent. You need something like coordinate descent to
-> get that.
+> get that. Speaking of which...
+
+**Coordinate descent:**
+
+TODO: write this.
 
 ## Links
 
@@ -272,6 +279,8 @@ Substitute in to get the final term for the (sub)gradient:
 - [The Matrix Cookbook (Petersen & Pedersen)](https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf)
 - [OLS with matrices notes (possibly Rosenfeld?)](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf)
 - [Coordinate Descent (Gordon & Tibshirani)](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/25-coord-desc.pdf)
+- [A Coordinate Descent Algorithm for the Lasso Problem (Chi)](http://jocelynchi.com/a-coordinate-descent-algorithm-for-the-lasso-problem)
+
 
 ## Acknowledgements
 

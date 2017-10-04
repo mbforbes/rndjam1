@@ -1,0 +1,17 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\newcommand{\r}{\vector{r}}
+\begin{align*}
+0 &= \frac{\partial}{\partial w_j} \mathcal{L}_{\textit{Lasso}}(\X,\y,\w, \lambda) \\
+0 &= \frac{2}{n} (\X^j)^T (\X\w - \y) + \lambda \frac{\partial}{\partial w_j} |w_j| \\
+0 &= \frac{2}{n} (\X^j)^T (\X^{-j} \w_{-j} + \X^j w_j - \y) + \lambda \frac{\partial}{\partial w_j} |w_j| \\
+0 &= \frac{2}{n} \left( (\X^j)^T \X^{-j} \w_{-j} + (\X^j)^T \X^j w_j - (\X^j)^T \y \right) + \lambda \frac{\partial}{\partial w_j} |w_j|\\
+\|\X^j\|_2^2 w_j &= (\X^j)^T \y - (\X^j)^T \X^{-j} \w_{-j} - \frac{n \lambda}{2} \frac{\partial}{\partial w_j} |w_j|\\
+\|\X^j\|_2^2 w_j &= (\X^j)^T (\y -\X^{-j} \w_{-j}) - \frac{n \lambda}{2} \frac{\partial}{\partial w_j} |w_j|\\
+\|\X^j\|_2^2 w_j^{(t+1)} &= (\X^j)^T (\r + \X_j w_j^{(t)}) - \frac{n \lambda}{2} \frac{\partial}{\partial w_j} |w_j|\\
+w_j^{(t+1)} &= \frac{(\X^j)^T (\r + \X_j w_j^{(t)})}{\|\X^j\|_2^2} - \frac{n \lambda}{2\|\X^j\|_2^2} \frac{\partial}{\partial w_j} |w_j| \\
+\end{align*}

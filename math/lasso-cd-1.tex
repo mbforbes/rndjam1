@@ -1,0 +1,12 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\newcommand{\r}{\vector{r}}
+\begin{align*}
+\frac{\partial}{\partial w_j} \mathcal{L}_{\textit{Lasso}}(\X,\y,\w,\lambda) &= \frac{\partial}{\partial w_j} \left[ \frac{1}{n} \|\y - \X\w||_2^2 + \lambda \|\w\|_1 \right] \\
+&= \frac{2}{n} (\y - \X\w)^T (-\X^j) + \lambda \frac{\partial}{\partial w_j} \|\w\|_1 \\
+&= \frac{2}{n} (\X^j)^T (\X\w - \y) + \lambda \frac{\partial}{\partial w_j} |w_j| \\
+\end{align*}

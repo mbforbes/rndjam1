@@ -176,7 +176,7 @@ that single weight:
 However, this is an expensive update to a single weight. We can speed this up.
 If we define the residual,
 
-![least squares residual](svg/least-squares-residual.svg)
+![residual](svg/residual.svg)
 
 then we can rewrite the inner term above as,
 
@@ -271,7 +271,23 @@ Substitute in to get the final term for the (sub)gradient:
 
 **Coordinate descent:**
 
-TODO: write this.
+![lasso cd 1](svg/lasso-cd-1.svg)
+
+setting this = 0, and again using the residual ![residual](svg/residual.svg),
+we have:
+
+![lasso cd 2](svg/lasso-cd-2.svg)
+
+> NB: I think that here (and below) we might really be saying that 0 is in the
+> set of subgradients, rather than that it equals zero.
+
+There's a lot going on. Let's define two variables to clean up our equation:
+
+![lasso cd 3](svg/lasso-cd-3.svg)
+
+From this, we can more clearly see the solution to this 1D problem:
+
+![lasso cd 4](svg/lasso-cd-4.svg)
 
 ## Links
 
@@ -280,7 +296,7 @@ TODO: write this.
 - [OLS with matrices notes (possibly Rosenfeld?)](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf)
 - [Coordinate Descent (Gordon & Tibshirani)](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/25-coord-desc.pdf)
 - [A Coordinate Descent Algorithm for the Lasso Problem (Chi)](http://jocelynchi.com/a-coordinate-descent-algorithm-for-the-lasso-problem)
-
+- [Deriving the lasso coordinate descent update (Fox)](https://www.coursera.org/learn/ml-regression/lecture/6OLyn/deriving-the-lasso-coordinate-descent-update)
 
 ## Acknowledgements
 

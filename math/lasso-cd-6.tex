@@ -1,0 +1,12 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\newcommand{\r}{\vector{r}}
+\begin{align*}
+w_j^{(t+1)} &= S(\rho, z) \\
+    &= S(\frac{(\X^j)^T (\r + \X_j w_j^{(t)})}{{\|\X^j\|_2^2}}, \frac{n \lambda}{2 {\|\X^j\|_2^2}}) \\
+    &= \frac{1}{\|\X^j\|_2^2} S( (\X^j)^T (\r + \X_j w_j^{(t)}) , \frac{n \lambda}{2}) \\
+\end{align*}

@@ -1,0 +1,10 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\newcommand{\r}{\vector{r}}
+\begin{align*}
+\r^{(t+1)} &= \r^{(t)} + (w_j^{(t)} - w_j^{(t+1)}) \X^j \\
+\end{align*}

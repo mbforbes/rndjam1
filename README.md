@@ -289,6 +289,19 @@ From this, we can more clearly see the solution to this 1D problem:
 
 ![lasso cd 4](svg/lasso-cd-4.svg)
 
+This solution is exactly the soft threshold operator:
+
+![lasso cd 5](svg/lasso-cd-5.svg)
+
+Rewriting this into its full form:
+
+![lasso cd 6](svg/lasso-cd-6.svg)
+
+As with coordinate descent above, we need to update the residual **r** after
+each weight update (skipping the derivation; same as above for OLS):
+
+![lasso residual update](svg/lasso-residual-update.svg)
+
 ## Links
 
 - [Table of regularized least squares functions (Wikipedia)](https://en.wikipedia.org/wiki/Regularized_least_squares#Partial_list_of_RLS_methods)

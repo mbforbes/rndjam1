@@ -31,12 +31,23 @@ def which_exist(filenames: List[str]) -> List[str]:
     return list(filter(lambda f: os.path.exists(f), filenames))
 
 
-def split_tensor(data: torch.Tensor) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def split_tensor(data: torch.Tensor, label_cols: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
     Splits 'all data' tensor into labels and features tensors.
+
+    Returns 2-tuple of:
+        (1) either a 1d (N) vector (if label_cols == 1),
+                or a 2d (N x L) matrix (if label_cols > 1)
+        (2) a 2d (N x D) matrix of datums x features
     """
-    labels = data[:, 0].type(torch.IntTensor)
-    features = data[:, 1:]
+    # have to be careful when selecting one column:
+    # - selecting data[:, 0]  gives a 1d (N) vector
+    # - selecting data[:, :1] gives a 2d (N x 1) matrix
+    if label_cols == 1:
+        labels = data[:, 0].type(torch.IntTensor)
+    else:
+        labels = data[:, :label_cols].type(torch.IntTensor)
+    features = data[:, label_cols:]
     return labels, features
 
 
@@ -84,16 +95,17 @@ def bin_to_tensor(filename: str) -> torch.Tensor:
     return torch.load(filename)
 
 
-def bin_to_tensors(filename: str) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def bin_to_tensors(filename: str, label_cols: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
-    Loads data from filename in torch.save(...) format; return label (col 0)
-    and features (rest) tensors.
+    Loads data from filename in torch.save(...) format; return label
+    (label_cols) and features (rest) tensors.
 
-    Retuns:
-        label    1D (N) tensor
-        features 2D (N x D) tensor
+    Returns 2-tuple of:
+        (1) either a 1d (N) vector (if label_cols == 1),
+                or a 2d (N x L) matrix (if label_cols > 1)
+        (2) a 2d (N x D) matrix of datums x features
     """
-    return split_tensor(bin_to_tensor(filename))
+    return split_tensor(bin_to_tensor(filename), label_cols)
 
 
 def bias_tensor(t: torch.Tensor) -> torch.Tensor:
@@ -109,6 +121,23 @@ def bias_tensor(t: torch.Tensor) -> torch.Tensor:
     n = len(t)
     bias_col = torch.ones(n)
     return torch.cat([t, bias_col], dim=1)
+
+
+def labels_to_onehot(labels: torch.IntTensor, opts: int) -> torch.IntTensor:
+    """
+    Turns 1d (N) class-label tensor `labels` into 2d (N x opts) onehot tensor
+    and returns it.
+
+    Arguments:
+        labels: 1d (N) vector of class labels
+        opts: number of class label options (will be output cols)
+
+    Returns:
+        2d (N x opts) onehot label matrix
+    """
+    n, = labels.size()
+    label_idx = labels.type(torch.LongTensor).view(-1,1)
+    return torch.IntTensor(n, opts).zero_().scatter_(1, label_idx, 1)
 
 
 # script
@@ -186,6 +215,33 @@ def bias() -> None:
     print('dataio.bias :: finish')
 
 
+def onehot() -> None:
+    """
+    Transform labels to onehot for files from this project (output from
+    bias()).
+    """
+    worklist = [
+        (constants.TRAIN_BIAS, constants.TRAIN_ONEHOT),
+        (constants.VAL_BIAS, constants.VAL_ONEHOT),
+        (constants.TEST_BIAS, constants.TEST_ONEHOT),
+    ]
+
+    existing = which_exist([out for inp, out in worklist])
+    if len(existing) > 0:
+        print('ERROR: Not creating onehots because the following files '
+            'already exist: {}'.format(existing))
+        return
+
+    print('dataio.onehot :: start')
+    for bias_fn, onehot_fn in worklist:
+        print('\t Converting {} to {}...'.format(bias_fn, onehot_fn))
+        # This is the actual code that does the onehot'ing.
+        class_labels, data = bin_to_tensors(bias_fn)
+        onehot_labels = labels_to_onehot(class_labels, 10).type(torch.FloatTensor)
+        tensor_to_bin(torch.cat([onehot_labels, data], dim=1), onehot_fn)
+    print('dataio.onehot :: finish')
+
+
 def main() -> None:
     """
     Runs a speed test of reading CSV vs torch.load(...)
@@ -195,6 +251,7 @@ def main() -> None:
     choice.add_argument('--speedtest', action='store_true')
     choice.add_argument('--convert', action='store_true')
     choice.add_argument('--bias', action='store_true')
+    choice.add_argument('--onehot', action='store_true')
     args = parser.parse_args()
     if args.speedtest:
         speedtest()
@@ -202,6 +259,8 @@ def main() -> None:
         convert()
     if args.bias:
         bias()
+    if args.onehot:
+        onehot()
 
 
 if __name__ == '__main__':

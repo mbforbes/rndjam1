@@ -12,6 +12,7 @@ might want to change.
 # - (3) normalized (zero mean, unit variance per feature)
 # - (4) tensor     (using torch.save(...) instead of a CSV format)
 # - (5) bias       (adding bias column)
+# - (6) onehot     (turning labels from numbers to onehots)
 
 # filenames
 TRAIN_RESPLIT = 'data/processed/resplit/mnist_train.csv'
@@ -29,6 +30,10 @@ TEST_TENSOR = 'data/processed/tensor/mnist_test.tensor'
 TRAIN_BIAS = 'data/processed/bias/mnist_train.tensor'
 VAL_BIAS = 'data/processed/bias/mnist_val.tensor'
 TEST_BIAS = 'data/processed/bias/mnist_test.tensor'
+
+TRAIN_ONEHOT = 'data/processed/onehot/mnist_train.tensor'
+VAL_ONEHOT = 'data/processed/onehot/mnist_val.tensor'
+TEST_ONEHOT = 'data/processed/onehot/mnist_test.tensor'
 
 
 # visdom

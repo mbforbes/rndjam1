@@ -459,42 +459,42 @@ val_x = val_x_cpu.type(FloatTT)
 print('Starting experiments...')
 dummy = 0.0
 
-# # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-# w = ols_analytic(train_x_cpu, train_y_cpu)
-# naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
-# naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
+# OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+w = ols_analytic(train_x_cpu, train_y_cpu)
+naive_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
+naive_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
 
-# # OLS gradient descent
-# ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
-# w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-# naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
-# naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
+# OLS gradient descent
+ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
+w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+naive_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+naive_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
-# # OLS coordinate descent
-# w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
-# naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
-# naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
+# OLS coordinate descent
+w = ols_coordinate_descent(train_x, train_y, {'epochs': 150, 'report_interval': 10})
+naive_regression_eval('Coordinate descent (train)', w, train_x, train_y, dummy, ols_loss)
+naive_regression_eval('Coordinate descent (val)', w, val_x, val_y, dummy, ols_loss)
 
-# # ridge analytic solution
-# for lmb in [0.2]:
-#     w = ridge_analytic(train_x, train_y, lmb)
-#     # code.interact(local=dict(globals(), **locals()))
-#     naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-#     naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+# ridge analytic solution
+for lmb in [0.2]:
+    w = ridge_analytic(train_x, train_y, lmb)
+    # code.interact(local=dict(globals(), **locals()))
+    naive_regression_eval('Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+    naive_regression_eval('Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
 
-# # ridge GD
-# ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
-# for lmb in [0.2]:
-#     w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
-#     naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
-#     naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
+# ridge GD
+ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
+for lmb in [0.2]:
+    w = gradient_descent_regression(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
+    naive_regression_eval('Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, ridge_loss)
+    naive_regression_eval('Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, ridge_loss)
 
-# # lasso GD
-# lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
-# for lmb in [0.2]:
-#     w = gradient_descent_regression(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
-#     naive_regression_eval('Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
-#     naive_regression_eval('Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
+# lasso GD
+lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
+for lmb in [0.2]:
+    w = gradient_descent_regression(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
+    naive_regression_eval('Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, lasso_loss)
+    naive_regression_eval('Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, lasso_loss)
 
 # lasso CD
 lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}

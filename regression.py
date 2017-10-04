@@ -31,6 +31,7 @@ import viewer
 # types
 # ---
 
+# for type checking
 FloatTensor = Union[torch.FloatTensor, torch.cuda.FloatTensor]
 IntTensor = Union[torch.IntTensor, torch.cuda.IntTensor]
 LossFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], float]
@@ -42,6 +43,10 @@ class GDSettings(TypedDict):
 class CDSettings(TypedDict):
     epochs: int
     report_interval: int
+
+# tensor types (TT); for use in code
+FloatTT = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+IntTT = torch.cuda.IntTensor if torch.cuda.is_available() else torch.IntTensor
 
 # functions
 # ---
@@ -89,7 +94,7 @@ def ols_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float = -1) -> f
     return (x.matmul(w) - y).pow(2).sum()/n
 
 
-def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.FloatTensor:
+def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> FloatTensor:
     """
     Returns ordinary least squares (OLS) analytic solution:
 
@@ -123,7 +128,7 @@ def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> torch.cuda.Flo
     # note that matmul 2D x 2D tensors does matrix multiplication
     #           matmul 2D x 1D tensors does matrix-vector product
     w = inv.matmul(x_t).matmul(y)
-    return w.cuda()
+    return w.type(FloatTT)
 
 
 def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> FloatTensor:
@@ -152,8 +157,8 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
     return (2/n)*(x.t().matmul(x.matmul(w) - y))
 
 
-def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor,
-        settings: CDSettings) -> torch.cuda.FloatTensor:
+def ols_coordinate_descent(x: FloatTensor, y_int: IntTensor,
+        settings: CDSettings) -> FloatTensor:
     """
     Runs OLS coordinate descent.
 
@@ -171,10 +176,10 @@ def ols_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTenso
     """
     epochs = settings['epochs']
     report_interval = settings['report_interval']
-    y = y_int.type(torch.cuda.FloatTensor)
+    y = y_int.type(FloatTT)
     n, d = x.size()
     # initial w is drawn from gaussian(0, 1)
-    w = torch.randn(d).type(torch.cuda.FloatTensor)
+    w = torch.randn(d).type(FloatTT)
 
     # precompute sq l2 column norms (don't change as x stays fixed)
     col_l2s = x.pow(2).sum(0)
@@ -223,7 +228,9 @@ def ridge_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> fl
     return ols_loss(w, x, y, 0.0) + lmb*w.pow(2).sum()
 
 
-def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> torch.cuda.FloatTensor:
+def ridge_analytic(
+        x: FloatTensor, y_int: IntTensor,
+        lmb: float) -> FloatTensor:
     """
     See the README section for the derivation:
 
@@ -240,14 +247,16 @@ def ridge_analytic(x: torch.cuda.FloatTensor, y_int: IntTensor, lmb: float) -> t
     # setup
     n, d = x.size()
     x_t = x.t()
-    i = torch.nn.init.eye(torch.cuda.FloatTensor(d,d))
-    y = y_int.type(torch.cuda.FloatTensor)
+    i = torch.nn.init.eye(torch.FloatTensor(d,d).type(FloatTT))
+    y = y_int.type(FloatTT)
 
     # formula
     return (x_t.matmul(x) + lmb*n*i).inverse().matmul(x_t).matmul(y)
 
 
-def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> torch.cuda.FloatTensor:
+def ridge_gradient(
+        w: FloatTensor, x: FloatTensor, y: FloatTensor,
+        lmb: float) -> FloatTensor:
     """
     See the README section for the derivation:
 
@@ -270,7 +279,8 @@ def ridge_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
 # lasso
 #
 
-def lasso_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
+def lasso_loss(
+        w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> float:
     """
     Returns lasso loss, where the the data component is averaged per datum (as
     in ols_loss(...)), and the regularization component is not:
@@ -289,7 +299,9 @@ def lasso_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> fl
     return ols_loss(w, x, y, 0.0) + lmb*w.abs().sum()
 
 
-def lasso_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> torch.cuda.FloatTensor:
+def lasso_gradient(
+        w: FloatTensor, x: FloatTensor, y: FloatTensor,
+        lmb: float) -> FloatTensor:
     """
     See the README section for the derivation:
 
@@ -308,8 +320,9 @@ def lasso_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -
     return (2/n)*(x.t().matmul(x.matmul(w) - y)) + lmb*w.sign()
 
 
-def lasso_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor,
-        lmb: float, settings: CDSettings) -> torch.cuda.FloatTensor:
+def lasso_coordinate_descent(
+        x: FloatTensor, y_int: IntTensor, lmb: float,
+        settings: CDSettings) -> FloatTensor:
     """
     Runs lasso coordinate descent.
 
@@ -329,9 +342,9 @@ def lasso_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTen
     """
     epochs = settings['epochs']
     report_interval = settings['report_interval']
-    y = y_int.type(torch.cuda.FloatTensor)
+    y = y_int.type(FloatTT)
     n, d = x.size()
-    w = torch.randn(d).type(torch.cuda.FloatTensor)  # N(0,1)
+    w = torch.randn(d).type(FloatTT)  # N(0,1)
 
     # precompute sq l2 column norms (don't change as x stays fixed)
     col_l2s = x.pow(2).sum(0)
@@ -367,8 +380,8 @@ def lasso_coordinate_descent(x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTen
 #
 
 def gradient_descent_regression(
-        x: torch.cuda.FloatTensor, y_int: torch.cuda.IntTensor, lmb: float,
-        loss_fn: LossFn, grad_fn: GradientFn, settings: GDSettings) -> torch.cuda.FloatTensor:
+        x: FloatTensor, y_int: IntTensor, lmb: float, loss_fn: LossFn,
+        grad_fn: GradientFn, settings: GDSettings) -> FloatTensor:
     """
     Arguments:
         x: 2D (N x D) input data
@@ -383,10 +396,10 @@ def gradient_descent_regression(
     report_interval = settings['report_interval']
 
     # setup
-    y = y_int.type(torch.cuda.FloatTensor)
+    y = y_int.type(FloatTT)
     n, d = x.size()
     # initial w is drawn from gaussian(0, 1)
-    w = torch.randn(d).type(torch.cuda.FloatTensor)
+    w = torch.randn(d).type(FloatTT)
 
     for epoch in range(epochs):
         # NOTE: can adjust lr if desired
@@ -407,8 +420,8 @@ def gradient_descent_regression(
 
 
 def naive_regression_eval(
-        method_name: str, w: torch.cuda.FloatTensor, x: torch.cuda.FloatTensor,
-        y: torch.cuda.IntTensor, lmb: float, loss_fn: LossFn) -> None:
+        method_name: str, w: FloatTensor, x: FloatTensor, y: IntTensor,
+        lmb: float, loss_fn: LossFn) -> None:
     """
     Arguments:
         w: 1D (D) weights of linear estimator
@@ -419,10 +432,10 @@ def naive_regression_eval(
     y_hat = x.matmul(w)
 
     # for correct count, see how often the rounded predicted value matches gold
-    corr = (y_hat.round().type(torch.cuda.IntTensor) == y).sum()
+    corr = (y_hat.round().type(IntTT) == y).sum()
 
     # for loss, compute sum of squared residuals
-    loss = loss_fn(w, x, y.type(torch.cuda.FloatTensor), lmb)
+    loss = loss_fn(w, x, y.type(FloatTT), lmb)
 
     total = len(y)
     print('{} accuracy: {}/{} ({}%)'.format(
@@ -438,10 +451,10 @@ train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_BIAS)
 val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_BIAS)
 
 print('Moving data to GPU...')
-train_y: torch.cuda.IntTensor = train_y_cpu.cuda()
-train_x: torch.cuda.FloatTensor = train_x_cpu.cuda()
-val_y: torch.cuda.IntTensor = val_y_cpu.cuda()
-val_x: torch.cuda.FloatTensor = val_x_cpu.cuda()
+train_y = train_y_cpu.type(IntTT)
+train_x = train_x_cpu.type(FloatTT)
+val_y = val_y_cpu.type(IntTT)
+val_x = val_x_cpu.type(FloatTT)
 
 print('Starting experiments...')
 dummy = 0.0

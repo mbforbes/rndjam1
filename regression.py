@@ -82,9 +82,11 @@ def ols_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float = -1) -> f
         1/n ||y - Xw||_2^2
 
     Arguments:
-        w: 1D (D) weights of linear estimator
-        x: 2D (N x D) input data
-        y: 1D (D) target labels
+        w: either 1d (D) or 2d (D x C) weights of linear estimator (depending
+            on y's dimensions)
+        x: 2d (N x D) input data
+        y: either 1d (N) target labels,
+               or 2d (N x C) one-hot representation of target labels
         _: unused (for API compatibility with regularized loss functions)
 
     Returns:
@@ -105,11 +107,13 @@ def ols_analytic(x: torch.FloatTensor, y_int: torch.IntTensor) -> FloatTensor:
         https://github.com/mbforbes/rndjam1#ordinary-least-squares-ls
 
     Arguments:
-        x: 2D (N x D) tensor
-        y: 1D (D) tensor
+        x: 2d (N x D) input data
+        y: either 1d (N) target labels,
+               or 2d (N x C) one-hot representation of target labels
 
     Returns
-        weights: 1D (D) tensor
+        w: either 1d (D) or 2d (D x C) weights of linear estimator (depending
+            on y's dimensions)
     """
     # for regression, y becomes real values instead of labels
     y: torch.FloatTensor = y_int.type(torch.FloatTensor)
@@ -139,19 +143,28 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
 
         https://github.com/mbforbes/rndjam1#ordinary-least-squares-ls
 
-    Note that the gradient is a vector:
+    Note that the gradient is either a vector (if Y has dimensions (N)):
 
         dL/dw = [dL/dw_1,  dL/dw_2,  ...,  dL/dw_d]
 
+    ... or a matrix (if Y has dimensions (N x C)):
+
+        dL/dW = [[dL/dw_11,  dL/dw_12,  ...,  dL/dw_1c],
+                 [dL/dw_21,  dL/dw_22,  ...,  dL/dw_2c],
+                 ...
+                 [dL/dw_d1,  dL/dw_d2,  ...,  dL/dw_dc]]
+
     Arguments:
-        w: 1D (D) weights of linear estimator
-        x: 2D (N x D) input data
-        y: 1D (D) target labels
+        w: either 1d (D) or 2d (D x C) weights of linear estimator (depending
+            on y's dimensions)
+        x: 2d (N x D) input data
+        y: either 1d (N) target labels,
+               or 2d (N x C) one-hot representation of target labels
         _: unused (for API compatibility with regularized loss functions)
 
     Returns:
-        dL/dw: 1D (D) derivative of 1/n averaged OLS loss L with respect to
-            weights w.
+        dL/dw: either 1d (D) or 2d (D x C) derivative of 1/n averaged OLS loss
+            L with respect to weights w (depending on y's dimensions)
     """
     n, d = x.size()
     return (2/n)*(x.t().matmul(x.matmul(w) - y))
@@ -384,11 +397,14 @@ def gradient_descent_regression(
         grad_fn: GradientFn, settings: GDSettings) -> FloatTensor:
     """
     Arguments:
-        x: 2D (N x D) input data
-        y: 1D (D) target labels
+        x: 2d (N x D) input data
+        y: either 1d (N) target labels,
+               or 2d (N x C) one-hot representation of target labels
 
     Returns:
-        w: 1D (D) weights of linear estimator
+        w: either 1d (D) or 2d (D x C) weights of linear estimator (depending
+            on y's dimensions)
+
     """
     # extract GD settings
     lr = settings['lr']
@@ -398,8 +414,9 @@ def gradient_descent_regression(
     # setup
     y = y_int.type(FloatTT)
     n, d = x.size()
+    w_dims = (d,) if len(y.size()) == 1 else (d, y.size()[1])
     # initial w is drawn from gaussian(0, 1)
-    w = torch.randn(d).type(FloatTT)
+    w = torch.randn(torch.Size(w_dims)).type(FloatTT)
 
     for epoch in range(epochs):
         # NOTE: can adjust lr if desired
@@ -420,9 +437,13 @@ def gradient_descent_regression(
 
 
 def report(method_name: str, corr: int, total: int, loss: float) -> None:
+    """
+    Prints stuff.
+    """
     print('{} accuracy: {}/{} ({}%)'.format(
         method_name, corr, total, round((corr/total)*100, 2)))
     print('{} average loss: {}'.format(method_name, loss))
+
 
 def naive_regression_eval(
         method_name: str, w: FloatTensor, x: FloatTensor, y: IntTensor,
@@ -556,6 +577,12 @@ def multi():
     w = ols_analytic(train_x_cpu, train_y_cpu)
     multi_regression_eval('OLS analytic (train)', w, train_x, train_y, dummy, ols_loss)
     multi_regression_eval('OLS analytic (val)', w, val_x, val_y, dummy, ols_loss)
+
+    # OLS gradient descent
+    ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 3500, 'report_interval': 500}
+    w = gradient_descent_regression(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+    multi_regression_eval('OLS GD (train)', w, train_x, train_y, dummy, ols_loss)
+    multi_regression_eval('OLS GD (val)', w, val_x, val_y, dummy, ols_loss)
 
 
 # execution starts here

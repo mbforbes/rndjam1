@@ -367,20 +367,26 @@ def coordinate_descent(
 
     Arguments:
         x: 2d (N x D) input data
-        y: 1d (D) target labels
+        y: 1d (D) or 2d (D x C) target labels
         lmb: regularization strength (if applicable)
         weight_update_fn: how to update w[j]
         loss_fn: how to compute loss
         settings: 'epochs' and 'report_interval'
 
     Returns:
-        w: 1d (D) weights
+        w: 1d (D) or 2d (D x C) weights
     """
     epochs = settings['epochs']
     report_interval = settings['report_interval']
     y = y_int.type(FloatTT)
     n, d = x.size()
-    w = torch.randn(d).type(FloatTT)  # N(0,1)
+    multiclass = len(y.size()) > 1
+
+    w_dims = (d,)
+    if multiclass:
+        n, c = y.size()
+        w_dims = (d, c)
+    w = torch.randn(torch.Size(w_dims)).type(FloatTT)  # N(0, 1)
 
     # precompute sq l2 column norms (don't change as x stays fixed)
     col_l2s = x.pow(2).sum(0)
@@ -397,14 +403,18 @@ def coordinate_descent(
 
         # just do linear scan over coordinates
         for j in range(d):
-            # save old val for redisual update
-            w_j_old = w[j]
+            # save old val for redisual update.
+            # (for multiclass need to copy tensor to remember old val)
+            w_j_old = w[j].clone() if multiclass else w[j]
 
             # compute new weight value
             w[j] = weight_update_fn(x, r, j, w_j_old, col_l2s[j], lmb)
 
-            # update residual
-            r += (w_j_old - w[j]) * x[:,j]
+            # update residual (either (N) or (N x C)). updates are:
+            # - scalar case: scalar times 1d (N) column
+            # - multiclass case: 2d (N x 1) column times 2d (1 x C) weight
+            w_diff = w_j_old - w[j]
+            r += x[:,j:j+1].matmul(w_diff.view(-1,1).t()) if multiclass else w_diff * x[:,j]
     return w
 
 
@@ -559,6 +569,11 @@ def multiclass():
     w = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
     report('[multiclass] OLS GD (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
     report('[multiclass] OLS GD (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
+
+    # OLS coordinate descent
+    w = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
+    report('[multiclass] OLS CD (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
+    report('[multiclass] OLS CD (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
 
 
 # execution starts here

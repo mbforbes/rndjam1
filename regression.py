@@ -29,7 +29,7 @@ IntTensor = Union[torch.IntTensor, torch.cuda.IntTensor]
 EvalFn = Callable[[FloatTensor, IntTensor], int]
 LossFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], float]
 GradientFn = Callable[[FloatTensor, FloatTensor, FloatTensor, float], FloatTensor]
-WeightUpdateFn = Callable[[FloatTensor, FloatTensor, float, float, float, float], float]
+WeightUpdateFn = Callable[[FloatTensor, FloatTensor, float, Union[float, FloatTensor], float, float], float]
 class GDSettings(TypedDict):
     lr: float
     epochs: int
@@ -165,8 +165,8 @@ def ols_gradient(w: FloatTensor, x: FloatTensor, y: FloatTensor, _: float) -> Fl
 
 
 def ols_cd_weight_update(
-        x: FloatTensor, r: FloatTensor, j: int, w_j: float, col_l2: float,
-        _: float) -> float:
+        x: FloatTensor, r: FloatTensor, j: int, w_j: Union[float, FloatTensor],
+        col_l2: float, _: float) -> float:
     """
     Returns new weight for OLS coordinate descent weight update.
 
@@ -246,12 +246,14 @@ def ridge_gradient(
 
 
 def ridge_cd_weight_update(
-        x: FloatTensor, r: FloatTensor, j: int, w_j: float, col_l2: float,
-        lmb: float) -> float:
+        x: FloatTensor, r: FloatTensor, j: int, w_j: Union[float, FloatTensor],
+        col_l2: float, lmb: float) -> float:
     """
     Returns new weight for ridge coordinate descent weight update.
 
-    TODO: derivation in README
+    See the README section for the derivation:
+
+        https://github.com/mbforbes/rndjam1#ridge-regression-rr
     """
     if col_l2 == 0.0:
         return 0.0
@@ -305,8 +307,8 @@ def lasso_gradient(
 
 
 def lasso_cd_weight_update(
-        x: FloatTensor, r: FloatTensor, j: int, w_j: float, col_l2: float,
-        lmb: float) -> float:
+        x: FloatTensor, r: FloatTensor, j: int, w_j: Union[float, FloatTensor],
+        col_l2: float, lmb: float) -> float:
     """
     Returns new weight for lasso coordinate descent weight update.
 
@@ -317,9 +319,17 @@ def lasso_cd_weight_update(
     if col_l2 == 0.0:
         return 0.0
     n, d = x.size()
-    rho = x[:,j].matmul(r + w_j*x[:,j])
+    # quick hack for multiclass (tensor instead of float) check
+    multiclass = hasattr(w_j, '__len__')
     z = (n * lmb) / 2
-    return soft_thresh(rho, z) / col_l2
+    if multiclass:
+        # w_j is tensor; multiclass regression
+        rho = x[:,j].matmul(r + x[:,j].unsqueeze(1).matmul(w_j.unsqueeze(0)))  # type: ignore
+        return torch.nn.functional.softshrink(rho, z).data / col_l2
+    else:
+        # w_j is scalar; scalar regression
+        rho = x[:,j].matmul(r + x[:,j]*w_j)
+        return soft_thresh(rho, z) / col_l2
 
 
 #
@@ -607,12 +617,26 @@ def multiclass():
     #     report('[multiclass] Ridge GD (train)', w, train_x, train_y, lmb, multiclass_eval, ridge_loss)
     #     report('[multiclass] Ridge GD (val)', w, val_x, val_y, lmb, multiclass_eval, ridge_loss)
 
-    # ridge coordinate descent
-    ridge_cd_settings: CDSettings = {'epochs': 150, 'report_interval': 10}
-    for lmb in [0.2]:
-        w = coordinate_descent(train_x, train_y, lmb, ridge_cd_weight_update, ridge_loss, ridge_cd_settings)
-        report('[multiclass] Ridge CD (train)', w, train_x, train_y, lmb, multiclass_eval, ridge_loss)
-        report('[multiclass] Ridge CD (val)', w, val_x, val_y, lmb, multiclass_eval, ridge_loss)
+    # # ridge coordinate descent
+    # ridge_cd_settings: CDSettings = {'epochs': 150, 'report_interval': 10}
+    # for lmb in [0.2]:
+    #     w = coordinate_descent(train_x, train_y, lmb, ridge_cd_weight_update, ridge_loss, ridge_cd_settings)
+    #     report('[multiclass] Ridge CD (train)', w, train_x, train_y, lmb, multiclass_eval, ridge_loss)
+    #     report('[multiclass] Ridge CD (val)', w, val_x, val_y, lmb, multiclass_eval, ridge_loss)
+
+    # # lasso GD
+    # lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 3000, 'report_interval': 500}
+    # for lmb in [0.2]:
+    #     w = gradient_descent(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
+    #     report('[multiclass] Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, multiclass_eval, lasso_loss)
+    #     report('[multiclass] Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, multiclass_eval, lasso_loss)
+
+    # lasso CD
+    lasso_cd_settings: CDSettings = {'epochs': 150, 'report_interval': 10}
+    for lmb in [0.01]:
+        w = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
+        report('[multiclass] Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, multiclass_eval, lasso_loss)
+        report('[multiclass] Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, multiclass_eval, lasso_loss)
 
 
 

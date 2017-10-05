@@ -64,6 +64,9 @@ python dataio.py --convert
 
 # add a bias colum
 python dataio.py --bias
+
+# create one-hot representation for multi-class methods
+python dataio.py --onehot
 ```
 
 

@@ -200,21 +200,19 @@ def ridge_loss(w: FloatTensor, x: FloatTensor, y: FloatTensor, lmb: float) -> fl
     return ols_loss(w, x, y, 0.0) + lmb*w.pow(2).sum()
 
 
-def ridge_analytic(
-        x: FloatTensor, y_int: IntTensor,
-        lmb: float) -> FloatTensor:
+def ridge_analytic(x: FloatTensor, y_int: IntTensor, lmb: float) -> FloatTensor:
     """
     See the README section for the derivation:
 
         https://github.com/mbforbes/rndjam1#ridge-regression-rr
 
     Arguments:
-        x: 2D (N x D) input data
-        y_int: 1D (D) target labels
+        x: 2d (N x D) input data
+        y_int: 1d (N) or 2d (N x C) target labels
         lmb: regularization strength (lambda)
 
     Returns:
-        ridge weights
+        1d (D) or 2d (D x C) ridge weights
     """
     # setup
     n, d = x.size()
@@ -564,18 +562,24 @@ def multiclass():
     report('[multiclass] OLS analytic (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
     report('[multiclass] OLS analytic (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
 
-    # OLS gradient descent
-    ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 3500, 'report_interval': 500}
-    w = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-    report('[multiclass] OLS GD (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
-    report('[multiclass] OLS GD (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
+    # # OLS gradient descent
+    # ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 3500, 'report_interval': 500}
+    # w = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+    # report('[multiclass] OLS GD (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
+    # report('[multiclass] OLS GD (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
 
-    # OLS coordinate descent
-    w = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
-    report('[multiclass] OLS CD (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
-    report('[multiclass] OLS CD (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
+    # # OLS coordinate descent
+    # w = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
+    # report('[multiclass] OLS CD (train)', w, train_x, train_y, dummy, multiclass_eval, ols_loss)
+    # report('[multiclass] OLS CD (val)', w, val_x, val_y, dummy, multiclass_eval, ols_loss)
+
+    # ridge analytic solution
+    for lmb in [0.2]:
+        w = ridge_analytic(train_x, train_y, lmb)
+        report('[multiclass] Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, multiclass_eval, ridge_loss)
+        report('[multiclass] Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, multiclass_eval, ridge_loss)
 
 
 # execution starts here
-scalar()
+# scalar()
 multiclass()

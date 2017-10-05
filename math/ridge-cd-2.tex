@@ -1,0 +1,18 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\newcommand{\r}{\vector{r}}
+\begin{align*}
+0 &= \frac{\partial}{\partial w_j} \mathcal{L}_{\textit{RR}}(\X,\y,\w,\lambda) \\
+0 &= \frac{2}{n} (\X\w - \y)^T \X^j + 2 \lambda w_j \\
+0 &= (\X\w - \y)^T \X^j + n \lambda w_j \\
+0 &= (\X^{-j}\w_{-j}  + \X^j w_j - \y)^T \X^j + n \lambda w_j \\
+0 &= \|\X^j\|_2^2 w_j + (\X^{-j}\w_{-j} - \y)^T \X^j + n \lambda w_j \\
+0 &= w_j + \frac{1}{\|\X^j\|_2^2} \left[ (\X^{-j}\w_{-j} - \y)^T \X^j + n \lambda w_j \right] \\
+w_j &= \frac{1}{\|\X^j\|_2^2} \left[ (\y - \X^{-j}\w_{-j})^T \X^j - n \lambda w_j \right] \\
+w_j &= \frac{1}{\|\X^j\|_2^2} \left[ (\r + \X^j \w_j)^T \X^j - n \lambda w_j \right] \\
+w_j^{(t+1)} &= w_j^{(t)} + \frac{1}{\|\X^j\|_2^2} \left[ \r^T \X^j - n \lambda w_j^{(t)} \right] \\
+\end{align*}

@@ -1,0 +1,10 @@
+% preamble
+\newcommand{\matrix}[1]{\mathbf{#1}}
+\newcommand{\vector}[1]{\mathbf{#1}}
+\newcommand{\X}{\matrix{X}}
+\newcommand{\y}{\vector{y}}
+\newcommand{\w}{\vector{w}}
+\newcommand{\r}{\vector{r}}
+\begin{align*}
+\frac{\partial}{\partial w_j} \|\w\|_2^2 &= \frac{\partial}{\partial w_j} \sum_{i=1}^d w_i^2 = \frac{\partial}{\partial w_j} w_j^2 = 2 w_j
+\end{align*}

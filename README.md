@@ -248,7 +248,27 @@ than above)
 
 **Coordinate descent:**
 
-TODO: write this (already in code). Small diff from OLS.
+The derivative of the regularization term with respect to a single weight is:
+
+![ridge cd 0](svg/ridge-cd-0.svg)
+
+with that in mind, the derivative of the loss function with respect to a single
+weight is:
+
+![ridge cd 1](svg/ridge-cd-1.svg)
+
+In setting this equal to 0 and solving, I'm going to do some serious hand
+waving about "previous" versus "next" values of the weight. (I discovered what
+seems (empirically) to be the correct form by modifying late equations of the
+Lasso coordinate descent update, but I'm not sure the correct way to do the
+derivation here.) We'll also make use of the residual
+![residual](svg/residual.svg).
+
+![ridge cd 2](svg/ridge-cd-2.svg)
+
+As above, we update the residual after each weight update:
+
+![residual update](svg/residual-update.svg)
 
 ### Lasso
 
@@ -305,7 +325,7 @@ Rewriting this into its full form:
 As with coordinate descent above, we need to update the residual **r** after
 each weight update (skipping the derivation; same as above for OLS):
 
-![lasso residual update](svg/lasso-residual-update.svg)
+![residual update](svg/residual-update.svg)
 
 ## Links
 

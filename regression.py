@@ -256,9 +256,7 @@ def ridge_cd_weight_update(
     if col_l2 == 0.0:
         return 0.0
     n, d = x.size()
-    rho = w_j + x[:,j].matmul(r)
-    z = n * lmb * w_j
-    return w_j + (rho - z) / col_l2
+    return w_j + (x[:,j].matmul(r) - n*lmb*w_j) / col_l2
 
 
 #
@@ -508,21 +506,21 @@ def scalar():
     print('Starting experiments...')
     dummy = 0.0
 
-    # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
-    w = ols_analytic(train_x_cpu, train_y_cpu)
-    report('[scalar] OLS analytic (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
-    report('[scalar] OLS analytic (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
+    # # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
+    # w = ols_analytic(train_x_cpu, train_y_cpu)
+    # report('[scalar] OLS analytic (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
+    # report('[scalar] OLS analytic (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
 
-    # OLS gradient descent
-    ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
-    w = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
-    report('[scalar] OLS GD (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
-    report('[scalar] OLS GD (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
+    # # OLS gradient descent
+    # ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
+    # w = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+    # report('[scalar] OLS GD (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
+    # report('[scalar] OLS GD (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
 
-    # OLS coordinate descent
-    w = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
-    report('[scalar] Coordinate descent (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
-    report('[scalar] Coordinate descent (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
+    # # OLS coordinate descent
+    # w = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
+    # report('[scalar] Coordinate descent (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
+    # report('[scalar] Coordinate descent (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
 
     # ridge analytic solution
     for lmb in [0.2]:
@@ -531,33 +529,33 @@ def scalar():
         report('[scalar] Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
         report('[scalar] Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
 
-    # ridge GD
-    ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
-    for lmb in [0.2]:
-        w = gradient_descent(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
-        report('[scalar] Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
-        report('[scalar] Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
+    # # ridge GD
+    # ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
+    # for lmb in [0.2]:
+    #     w = gradient_descent(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
+    #     report('[scalar] Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
+    #     report('[scalar] Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
 
     # ridge CD
-    ridge_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
+    ridge_cd_settings: CDSettings = {'epochs': 250, 'report_interval': 10}
     for lmb in [0.2]:
         w = coordinate_descent(train_x, train_y, lmb, ridge_cd_weight_update, ridge_loss, ridge_cd_settings)
         report('[scalar] Ridge CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
         report('[scalar] Ridge CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
 
-    # lasso GD
-    lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
-    for lmb in [0.2]:
-        w = gradient_descent(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
-        report('[scalar] Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, lasso_loss)
-        report('[scalar] Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, lasso_loss)
+    # # lasso GD
+    # lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
+    # for lmb in [0.2]:
+    #     w = gradient_descent(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
+    #     report('[scalar] Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, lasso_loss)
+    #     report('[scalar] Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, lasso_loss)
 
-    # lasso CD
-    lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
-    for lmb in [0.2]:
-        w = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
-        report('[scalar] Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, lasso_loss)
-        report('[scalar] Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, lasso_loss)
+    # # lasso CD
+    # lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
+    # for lmb in [0.2]:
+    #     w = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
+    #     report('[scalar] Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, lasso_loss)
+    #     report('[scalar] Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, lasso_loss)
 
 
 def multiclass():

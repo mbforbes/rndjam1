@@ -245,6 +245,22 @@ def ridge_gradient(
     return (2/n)*(x.t().matmul(x.matmul(w) - y)) + 2*lmb*w
 
 
+def ridge_cd_weight_update(
+        x: FloatTensor, r: FloatTensor, j: int, w_j: float, col_l2: float,
+        lmb: float) -> float:
+    """
+    Returns new weight for ridge coordinate descent weight update.
+
+    TODO: derivation in README
+    """
+    if col_l2 == 0.0:
+        return 0.0
+    n, d = x.size()
+    rho = w_j + x[:,j].matmul(r)
+    z = n * lmb * w_j
+    return w_j + (rho - z) / col_l2
+
+
 #
 # lasso
 #
@@ -522,6 +538,13 @@ def scalar():
         report('[scalar] Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
         report('[scalar] Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
 
+    # ridge CD
+    ridge_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
+    for lmb in [0.2]:
+        w = coordinate_descent(train_x, train_y, lmb, ridge_cd_weight_update, ridge_loss, ridge_cd_settings)
+        report('[scalar] Ridge CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
+        report('[scalar] Ridge CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
+
     # lasso GD
     lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
     for lmb in [0.2]:
@@ -588,5 +611,5 @@ def multiclass():
 
 
 # execution starts here
-# scalar()
-multiclass()
+scalar()
+# multiclass()

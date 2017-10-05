@@ -246,7 +246,9 @@ than above)
 
 ![ridge gradient](svg/ridge-gradient.svg)
 
-> NB: Skipping ridge coordinate descent for sake of time.
+**Coordinate descent:**
+
+TODO: write this (already in code). Small diff from OLS.
 
 ### Lasso
 

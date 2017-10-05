@@ -579,6 +579,13 @@ def multiclass():
         report('[multiclass] Ridge analytic (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, multiclass_eval, ridge_loss)
         report('[multiclass] Ridge analytic (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, multiclass_eval, ridge_loss)
 
+    # ridge gradient descent
+    ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 3500, 'report_interval': 500}
+    for lmb in [0.2]:
+        w = gradient_descent(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
+        report('[multiclass] Ridge GD (train)', w, train_x, train_y, lmb, multiclass_eval, ridge_loss)
+        report('[multiclass] Ridge GD (val)', w, val_x, val_y, lmb, multiclass_eval, ridge_loss)
+
 
 # execution starts here
 # scalar()

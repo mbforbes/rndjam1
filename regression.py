@@ -37,6 +37,8 @@ class GDSettings(TypedDict):
 class CDSettings(TypedDict):
     epochs: int
     report_interval: int
+Record = Dict[int, float]
+
 
 # tensor types (TT); for use in code
 FloatTT = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
@@ -338,7 +340,7 @@ def lasso_cd_weight_update(
 
 def gradient_descent(
         x: FloatTensor, y_int: IntTensor, lmb: float, loss_fn: LossFn,
-        grad_fn: GradientFn, settings: GDSettings) -> FloatTensor:
+        grad_fn: GradientFn, settings: GDSettings) -> Tuple[FloatTensor, Record]:
     """
     Arguments:
         x: 2d (N x D) input data
@@ -348,7 +350,7 @@ def gradient_descent(
     Returns:
         w: either 1d (D) or 2d (D x C) weights of linear estimator (depending
             on y's dimensions)
-
+        record: for a subset of the epochs, maps epoch to loss
     """
     # extract GD settings
     lr = settings['lr']
@@ -361,9 +363,10 @@ def gradient_descent(
     w_dims = (d,) if len(y.size()) == 1 else (d, y.size()[1])
     # initial w is drawn from gaussian(0, 1)
     w = torch.randn(torch.Size(w_dims)).type(FloatTT)
+    record = {}
 
     for epoch in range(epochs):
-        # NOTE: can adjust lr if desired
+        # NOTE: could adjust lr here if desired
 
         # compute gradient
         grad = grad_fn(w, x, y, lmb)
@@ -373,17 +376,19 @@ def gradient_descent(
 
         # maybe report
         if epoch % report_interval == 0:
+            loss = loss_fn(w, x, y, lmb)
+            record[epoch] = loss
             print(' .. epoch {}, lr: {:.4f}, loss: {:.4f} (gradient mag: {:.4f}) (0 ws: {})'.format(
-                epoch, lr, loss_fn(w, x, y, lmb), grad.norm(p=2), (w == 0).sum()))
+                epoch, lr, loss, grad.norm(p=2), (w == 0).sum()))
 
     # give back final weights
-    return w
+    return w, record
 
 
 def coordinate_descent(
         x: FloatTensor, y_int: IntTensor, lmb: float,
         weight_update_fn: WeightUpdateFn, loss_fn: LossFn,
-        settings: CDSettings) -> FloatTensor:
+        settings: CDSettings) -> Tuple[FloatTensor, Record]:
     """
     Runs coordinate descent.
 
@@ -397,17 +402,19 @@ def coordinate_descent(
 
     Returns:
         w: 1d (D) or 2d (D x C) weights
+        record: subset of epochs mapped to loss
     """
     epochs = settings['epochs']
     report_interval = settings['report_interval']
     y = y_int.type(FloatTT)
     n, d = x.size()
     multiclass = len(y.size()) > 1
+    record = {}
 
     w_dims = (d,)
     if multiclass:
         n, c = y.size()
-        w_dims = (d, c)
+        w_dims = (d, c)  # type: ignore
     w = torch.randn(torch.Size(w_dims)).type(FloatTT)  # N(0, 1)
 
     # precompute sq l2 column norms (don't change as x stays fixed)
@@ -420,8 +427,10 @@ def coordinate_descent(
     for epoch in range(epochs):
         # maybe report
         if epoch % report_interval == 0:
+            loss = loss_fn(w, x, y, lmb)
+            record[epoch] = loss
             print('\t CD epoch {}, loss: {:.4f} (0 ws: {})'.format(
-                epoch, loss_fn(w, x, y, lmb), (w == 0).sum()))
+                epoch, loss, (w == 0).sum()))
 
         # just do linear scan over coordinates
         for j in range(d):
@@ -437,7 +446,7 @@ def coordinate_descent(
             # - multiclass case: 2d (N x 1) column times 2d (1 x C) weight
             w_diff = w_j_old - w[j]
             r += x[:,j:j+1].matmul(w_diff.view(-1,1).t()) if multiclass else w_diff * x[:,j]
-    return w
+    return w, record
 
 
 def scalar_eval(y_hat: FloatTensor, y: IntTensor) -> int:
@@ -472,6 +481,25 @@ def multiclass_eval(y_hat: FloatTensor, y: IntTensor) -> int:
     return (pred_idxes == gold_idxes).sum()
 
 
+def accuracy(
+        x: FloatTensor, y: IntTensor, w: FloatTensor,
+        eval_fn: EvalFn) -> Tuple[int, int, float]:
+    """
+    Arguments:
+        x: 2d (N x D) input data
+        y: either 1d (N) or 2d (N x C) target labels
+        w: either 1d (D) or 2d (D x C) weights of linear estimator
+        eval_fn: function to determine number gotten correct
+
+    Returns:
+        correct, total, accuracy (as percent out of 100)
+    """
+    y_hat = x.matmul(w)
+    corr = eval_fn(y_hat, y)
+    total = len(y)
+    return corr, total, round((corr/total)*100, 2)
+
+
 def report(
         method_name: str, w: FloatTensor, x: FloatTensor, y: IntTensor,
         lmb: float, eval_fn: EvalFn, loss_fn: LossFn) -> None:
@@ -487,14 +515,11 @@ def report(
         loss_fn: function to determine loss
     """
     # compute
-    y_hat = x.matmul(w)
-    corr = eval_fn(y_hat, y)
-    total = len(y)
+    corr, total, acc = accuracy(x, y, w, eval_fn)
     loss = loss_fn(w, x, y.type(FloatTT), lmb)
 
     # report
-    print('{} accuracy: {}/{} ({}%)'.format(
-        method_name, corr, total, round((corr/total)*100, 2)))
+    print('{} accuracy: {}/{} ({}%)'.format(method_name, corr, total, acc))
     print('{} average loss: {}'.format(method_name, loss))
 
 
@@ -502,7 +527,8 @@ def scalar():
     """
     Regress to scalar value, e.g. the image of "5" goes to the number 5.
     """
-    # load
+    # setup
+    # ---
     print('Loading data...')
     train_y_cpu, train_x_cpu = dataio.bin_to_tensors(constants.TRAIN_BIAS)
     val_y_cpu, val_x_cpu = dataio.bin_to_tensors(constants.VAL_BIAS)
@@ -516,21 +542,62 @@ def scalar():
     print('Starting experiments...')
     dummy = 0.0
 
+    # OLS
+    # ---
+
     # OLS analytic solution. uses CPU tensors to go to/from numpy for pseudoinverse.
     w = ols_analytic(train_x_cpu, train_y_cpu)
+    loss_ols = ols_loss(w, train_x, train_y.type(FloatTT))
     report('[scalar] OLS analytic (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
     report('[scalar] OLS analytic (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
 
+    # plot of ols accuracy
+    _, _, ols_acc = accuracy(val_x, val_y, w, scalar_eval)
+    viewer.plot_bar(
+        torch.FloatTensor([ols_acc, 0.0]), ['OLS'], 'Validation Accuracy',
+        dict(ytickmin=0.0, ytickmax=100.0, xtickvals=[1], xticklabels=['OLS']))
+    return
+
     # OLS gradient descent
-    ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 100}
-    w = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
+    ols_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1500, 'report_interval': 10}
+    w, record = gradient_descent(train_x, train_y, -1, ols_loss, ols_gradient, ols_gd_settings)
     report('[scalar] OLS GD (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
     report('[scalar] OLS GD (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
 
+    # plot OLS GD
+    xs = torch.FloatTensor(sorted(list(record.keys())))
+    viewer.plot_line(
+        xs,
+        torch.stack([
+            torch.FloatTensor(torch.ones(len(xs)) * loss_ols),
+            torch.FloatTensor([record[k] for k in sorted(list(record.keys()))]),
+        ]),
+        ['Analytic', 'Gradient descent'],
+        'OLS Gradient Descent',
+        dict(xlabel='GD steps (epochs)', ylabel='Loss', ytype='log')
+    )
+
+
     # OLS coordinate descent
-    w = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
+    w, record = coordinate_descent(train_x, train_y, dummy, ols_cd_weight_update, ols_loss, {'epochs': 150, 'report_interval': 10})
     report('[scalar] Coordinate descent (train)', w, train_x, train_y, dummy, scalar_eval, ols_loss)
     report('[scalar] Coordinate descent (val)', w, val_x, val_y, dummy, scalar_eval, ols_loss)
+
+    # plot OLS CD
+    xs = torch.FloatTensor(sorted(list(record.keys())))
+    viewer.plot_line(
+        xs,
+        torch.stack([
+            torch.FloatTensor(torch.ones(len(xs)) * loss_ols),
+            torch.FloatTensor([record[k] for k in sorted(list(record.keys()))]),
+        ]),
+        ['Analytic', 'Coordinate descent'],
+        'OLS Coordinate Descent',
+        dict(xlabel='CD epochs', ylabel='Loss', ytype='log')
+    )
+
+    # ridge
+    # ---
 
     # ridge analytic solution
     for lmb in [0.2]:
@@ -542,28 +609,28 @@ def scalar():
     # ridge GD
     ridge_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 500, 'report_interval': 100}
     for lmb in [0.2]:
-        w = gradient_descent(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
+        w, record = gradient_descent(train_x, train_y, lmb, ridge_loss, ridge_gradient, ridge_gd_settings)
         report('[scalar] Ridge GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
         report('[scalar] Ridge GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
 
     # ridge CD
     ridge_cd_settings: CDSettings = {'epochs': 150, 'report_interval': 10}
     for lmb in [0.2]:
-        w = coordinate_descent(train_x, train_y, lmb, ridge_cd_weight_update, ridge_loss, ridge_cd_settings)
+        w, record = coordinate_descent(train_x, train_y, lmb, ridge_cd_weight_update, ridge_loss, ridge_cd_settings)
         report('[scalar] Ridge CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, ridge_loss)
         report('[scalar] Ridge CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, ridge_loss)
 
     # lasso GD
     lasso_gd_settings: GDSettings = {'lr': 0.02, 'epochs': 1000, 'report_interval': 100}
     for lmb in [0.2]:
-        w = gradient_descent(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
+        w, record = gradient_descent(train_x, train_y, lmb, lasso_loss, lasso_gradient, lasso_gd_settings)
         report('[scalar] Lasso GD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, lasso_loss)
         report('[scalar] Lasso GD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, lasso_loss)
 
     # lasso CD
     lasso_cd_settings: CDSettings = {'epochs': 100, 'report_interval': 10}
     for lmb in [0.2]:
-        w = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
+        w, record = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
         report('[scalar] Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, scalar_eval, lasso_loss)
         report('[scalar] Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, scalar_eval, lasso_loss)
 
@@ -634,12 +701,12 @@ def multiclass():
     # lasso CD
     lasso_cd_settings: CDSettings = {'epochs': 150, 'report_interval': 10}
     for lmb in [0.01]:
-        w = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
+        w, record = coordinate_descent(train_x, train_y, lmb, lasso_cd_weight_update, lasso_loss, lasso_cd_settings)
         report('[multiclass] Lasso CD (train) lambda={}'.format(lmb), w, train_x, train_y, lmb, multiclass_eval, lasso_loss)
         report('[multiclass] Lasso CD (val) lambda={}'.format(lmb), w, val_x, val_y, lmb, multiclass_eval, lasso_loss)
 
 
 
 # execution starts here
-# scalar()
-multiclass()
+scalar()
+# multiclass()

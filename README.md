@@ -165,6 +165,16 @@ Doing a little bit of algebra to clean up the gradient, we'll get our
 
 ![least squares gradient](svg/least-squares-gradient.svg)
 
+We can plot the loss as we take more gradient descent steps:
+
+![ols gradient descent linear plot](images/ols_gd_linear.png)
+
+... but it's hard to see what's happening. That's because the loss starts so
+high and the y-axis is on a linear scale. A log scale is marginally more
+informative:
+
+![ols gradient descent log plot](images/ols_gd_log.png)
+
 To instead do **coordinate descent**, we optimize a single coordinate at a
 time, keeping all others fixed. We take the **derivative** of the loss function
 with respect to a **single weight**:
@@ -209,6 +219,13 @@ whereas gradient descent can run entirely on the GPU. I'm not sure if I can
 remedy this. With that said, coordinate descent converges with 10x fewer
 iterations.
 
+![ols coordinate descent plot](images/ols_cd.png)
+
+But how well do we do in regressing to a scalar with OLS?
+
+![ols accuracy](images/ols_acc.png)
+
+Not very well.
 
 ### Ridge regression (RR)
 

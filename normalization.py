@@ -2,25 +2,18 @@
 Handles per-feature normalization to zero mean and unit variance.
 """
 
-# imports
-# ---
-
-# builtins
 import code
 import csv
 from typing import List, Tuple
 import os
 
-# 3rd party
 import numpy as np  # for the epsilon definition and float comparison
 import torch
 
-# local
 import constants
 import dataio
 
 # constants
-# ---
 
 # practically defined; this is as close as we can expect for checking float eq
 # when normalizing.
@@ -28,11 +21,13 @@ CHECK_EPSILON = 1e-5
 
 
 # lib functions
-# ---
 
 def normalize(
-        features: torch.FloatTensor, means: torch.FloatTensor,
-        stds: torch.FloatTensor, check: bool = False) -> torch.Tensor:
+    features: torch.FloatTensor,
+    means: torch.FloatTensor,
+    stds: torch.FloatTensor,
+    check: bool = False,
+) -> torch.Tensor:
     """
     Arguments:
         features: N x D
@@ -65,20 +60,18 @@ def normalize(
         new_means = norm.mean(0)
         for i, m in enumerate(new_means):
             if not np.isclose(0.0, m, atol=CHECK_EPSILON):
-                print('ERROR: Dimension {} has mean {}, wanted 0.0'.format(
-                    i, m
-                ))
+                print("ERROR: Dimension {} has mean {}, wanted 0.0".format(i, m))
 
         # ensure each variance entry 1 or 0
         variances = norm.var(0)
         for i, v in enumerate(variances):
-            if not (np.isclose(0.0, v, atol=CHECK_EPSILON) or
-                    np.isclose(1.0, v, atol=CHECK_EPSILON)):
+            if not (
+                np.isclose(0.0, v, atol=CHECK_EPSILON)
+                or np.isclose(1.0, v, atol=CHECK_EPSILON)
+            ):
                 print(
-                    'ERROR: Dimension {} has variance {},'
-                    'wanted 0.0 or 1.0'.format(
-                        i, v
-                    )
+                    "ERROR: Dimension {} has variance {},"
+                    "wanted 0.0 or 1.0".format(i, v)
                 )
 
     # give normalized features
@@ -86,12 +79,15 @@ def normalize(
 
 
 # script functions
-# ---
 
 def normalize_and_save(
-        labels: torch.Tensor, features: torch.Tensor, out_fn: str,
-        means: torch.Tensor, stds: torch.Tensor,
-        check: bool = False) -> None:
+    labels: torch.Tensor,
+    features: torch.Tensor,
+    out_fn: str,
+    means: torch.Tensor,
+    stds: torch.Tensor,
+    check: bool = False,
+) -> None:
     """
     Helper
     """
@@ -102,12 +98,10 @@ def normalize_and_save(
     dataio.tensor_to_csv(result, out_fn)
 
 
-def normalize_data(
-        train: Tuple[str, str], worklist: List[Tuple[str, str]]) -> None:
+def normalize_data(train: Tuple[str, str], worklist: List[Tuple[str, str]]) -> None:
     train_unnorm_fn, train_norm_fn = train
 
-    train_labels, train_unnorm_features = dataio.csv_to_tensors(
-        train_unnorm_fn)
+    train_labels, train_unnorm_features = dataio.csv_to_tensors(train_unnorm_fn)
 
     # now, compute per-feature mean/std. dimension is 0 because averaging
     # *along* the 0th dimension (data rows). slightly counter-intuitive because
@@ -118,12 +112,12 @@ def normalize_data(
 
     # normalize and save train
     normalize_and_save(
-        train_labels, train_unnorm_features, train_norm_fn, means, stds, True)
+        train_labels, train_unnorm_features, train_norm_fn, means, stds, True
+    )
 
     # normalize others (probably val and test)
     for raw_fn, norm_fn in worklist:
-        normalize_and_save(
-            *dataio.csv_to_tensors(raw_fn), norm_fn, means, stds, False)
+        normalize_and_save(*dataio.csv_to_tensors(raw_fn), norm_fn, means, stds, False)
 
 
 def main() -> None:
@@ -143,13 +137,14 @@ def main() -> None:
     # not overwrite them if so.
     existing = dataio.which_exist([train[1]] + [w[1] for w in worklist])
     if len(existing) > 0:
-        print('ERROR: The following normalized files already exist: {}'.format(
-            existing))
+        print(
+            "ERROR: The following normalized files already exist: {}".format(existing)
+        )
         return
 
     # now we can actually normalize
     normalize_data(train, worklist)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

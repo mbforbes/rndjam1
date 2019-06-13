@@ -2,27 +2,20 @@
 For reading and writing crap.
 """
 
-# imports
-# ---
-
-# builtins
 import argparse
 import csv
 from typing import Tuple, List, Dict
 import os
 import time
 
-# 3rd party
 import torch
 from tqdm import tqdm
 
-# local
 import constants  # for speed test script; not needed for data IO
 import viewer
 
 
 # lib functions
-# ---
 
 def which_exist(filenames: List[str]) -> List[str]:
     """
@@ -31,7 +24,9 @@ def which_exist(filenames: List[str]) -> List[str]:
     return list(filter(lambda f: os.path.exists(f), filenames))
 
 
-def split_tensor(data: torch.Tensor, classes: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def split_tensor(
+    data: torch.Tensor, classes: int = 1
+) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
     Splits 'all data' tensor into labels and features tensors.
 
@@ -55,13 +50,12 @@ def csv_to_tensor(filename: str) -> torch.Tensor:
     """
     Loads all data from filename in csv format; returns in a single tensor.
     """
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         rows = [r for r in csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)]
     return torch.Tensor(rows)
 
 
-def csv_to_tensors(
-        filename: str) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def csv_to_tensors(filename: str) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
     Loads data from filename in csv format; return label (col 0) and features
     (rest) tensors.
@@ -74,7 +68,7 @@ def tensor_to_csv(t: torch.Tensor, filename: str) -> None:
     Writes tensor t to filename on disk in csv format, creating parent directories as needed.
     """
     os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         w = csv.writer(f)
         w.writerows(t)
 
@@ -95,7 +89,9 @@ def bin_to_tensor(filename: str) -> torch.Tensor:
     return torch.load(filename)
 
 
-def bin_to_tensors(filename: str, classes: int = 1) -> Tuple[torch.IntTensor, torch.FloatTensor]:
+def bin_to_tensors(
+    filename: str, classes: int = 1
+) -> Tuple[torch.IntTensor, torch.FloatTensor]:
     """
     Loads data from filename in torch.save(...) format; return label
     (classes) and features (rest) tensors.
@@ -136,12 +132,11 @@ def labels_to_onehot(labels: torch.IntTensor, classes: int) -> torch.IntTensor:
         2d (N x classes) onehot label matrix
     """
     n, = labels.size()
-    label_idx = labels.type(torch.LongTensor).view(-1,1)
+    label_idx = labels.type(torch.LongTensor).view(-1, 1)
     return torch.IntTensor(n, classes).zero_().scatter_(1, label_idx, 1)
 
 
 # script
-# --
 
 def speedtest(n: int = 3) -> None:
     """
@@ -150,10 +145,10 @@ def speedtest(n: int = 3) -> None:
     visdom.
     """
     tests = [
-        ('big file, csv', csv_to_tensor, constants.TRAIN_NORM),
-        ('big file, tensor', bin_to_tensor, constants.TRAIN_TENSOR),
-        ('small file, csv', csv_to_tensor, constants.VAL_NORM),
-        ('small file, tensor', bin_to_tensor, constants.VAL_TENSOR),
+        ("big file, csv", csv_to_tensor, constants.TRAIN_NORM),
+        ("big file, tensor", bin_to_tensor, constants.TRAIN_TENSOR),
+        ("small file, csv", csv_to_tensor, constants.VAL_NORM),
+        ("small file, tensor", bin_to_tensor, constants.VAL_TENSOR),
     ]
     results = {}  # type: Dict[str, List[float]]
     for desc, fn, arg in tqdm(tests):
@@ -163,7 +158,7 @@ def speedtest(n: int = 3) -> None:
             res = fn(arg)
             results[desc].append(time.perf_counter() - start)
             del res
-    viewer.plot_jitter(results, 'Data Loading Speeds')
+    viewer.plot_jitter(results, "Data Loading Speeds")
 
 
 def convert() -> None:
@@ -179,16 +174,18 @@ def convert() -> None:
     # pre-check: don't convert if any dest. files exist
     existing = which_exist([out for inp, out in worklist])
     if len(existing) > 0:
-        print('ERROR: Not converting because the following files already '
-            'exist: {}'.format(existing))
+        print(
+            "ERROR: Not converting because the following files already "
+            "exist: {}".format(existing)
+        )
         return
 
-    print('dataio.convert :: start')
+    print("dataio.convert :: start")
     for csv_fn, bin_fn in worklist:
-        print('\t Converting {} to {}...'.format(csv_fn, bin_fn))
+        print("\t Converting {} to {}...".format(csv_fn, bin_fn))
         # This is the actual line of code that does the conversion.
         tensor_to_bin(csv_to_tensor(csv_fn), bin_fn)
-    print('dataio.convert :: finish')
+    print("dataio.convert :: finish")
 
 
 def bias() -> None:
@@ -203,16 +200,18 @@ def bias() -> None:
 
     existing = which_exist([out for inp, out in worklist])
     if len(existing) > 0:
-        print('ERROR: Not adding bias because the following files already '
-            'exist: {}'.format(existing))
+        print(
+            "ERROR: Not adding bias because the following files already "
+            "exist: {}".format(existing)
+        )
         return
 
-    print('dataio.bias :: start')
+    print("dataio.bias :: start")
     for tensor_fn, bias_fn in worklist:
-        print('\t Converting {} to {}...'.format(tensor_fn, bias_fn))
+        print("\t Converting {} to {}...".format(tensor_fn, bias_fn))
         # This is the actual line of code that does the biasing.
         tensor_to_bin(bias_tensor(bin_to_tensor(tensor_fn)), bias_fn)
-    print('dataio.bias :: finish')
+    print("dataio.bias :: finish")
 
 
 def onehot() -> None:
@@ -228,30 +227,32 @@ def onehot() -> None:
 
     existing = which_exist([out for inp, out in worklist])
     if len(existing) > 0:
-        print('ERROR: Not creating onehots because the following files '
-            'already exist: {}'.format(existing))
+        print(
+            "ERROR: Not creating onehots because the following files "
+            "already exist: {}".format(existing)
+        )
         return
 
-    print('dataio.onehot :: start')
+    print("dataio.onehot :: start")
     for bias_fn, onehot_fn in worklist:
-        print('\t Converting {} to {}...'.format(bias_fn, onehot_fn))
+        print("\t Converting {} to {}...".format(bias_fn, onehot_fn))
         # This is the actual code that does the onehot'ing.
         class_labels, data = bin_to_tensors(bias_fn)
         onehot_labels = labels_to_onehot(class_labels, 10).type(torch.FloatTensor)
         tensor_to_bin(torch.cat([onehot_labels, data], dim=1), onehot_fn)
-    print('dataio.onehot :: finish')
+    print("dataio.onehot :: finish")
 
 
 def main() -> None:
     """
-    Runs a speed test of reading CSV vs torch.load(...)
+    Data utils: speed test, conversion, biasing, making one-hot (see body).
     """
-    parser = argparse.ArgumentParser(description='Data stuff.')
+    parser = argparse.ArgumentParser(description="Data stuff.")
     choice = parser.add_mutually_exclusive_group(required=True)
-    choice.add_argument('--speedtest', action='store_true')
-    choice.add_argument('--convert', action='store_true')
-    choice.add_argument('--bias', action='store_true')
-    choice.add_argument('--onehot', action='store_true')
+    choice.add_argument("--speedtest", action="store_true")
+    choice.add_argument("--convert", action="store_true")
+    choice.add_argument("--bias", action="store_true")
+    choice.add_argument("--onehot", action="store_true")
     args = parser.parse_args()
     if args.speedtest:
         speedtest()
@@ -263,5 +264,5 @@ def main() -> None:
         onehot()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

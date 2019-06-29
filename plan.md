@@ -42,7 +42,7 @@ Restructure:
     - Data loading
         - Note how this probably doesn't matter in practice
 - Notation
-- OLS
+- Linear: OLS
     - Naive regression to scalar (note + example)
     - (rest of OLS content)
     - Graphs + results
@@ -50,22 +50,38 @@ Restructure:
         - Consider updating a derivation (to show shapes work) and showing how code
           "just runs" (maybe shape annotations on code)
     - Graphs + results
-- Ridge
+- Linear: Ridge
     - Include section checking weight magnitudes vs OLS under a couple different
       regularization strengths
     - Don't spend much time on single regression to scalar results, focus on multiclass
       results and weight properties
     - (rest of ridge content)
-- Lasso
+- Linear: Lasso
     - Include discussion of weight 0s requiring coordinate descent as more main point
     - Include comparisons of weight 0s
     - (rest of lasso content)
+- Logistic: Intro
+- Logistic: MLE
+- Logistic: Regularization (L2 definitely, maybe L1)
 - Links
 - Acknowledgments
 
+Include somewhere: [MNIST scores reference](http://yann.lecun.com/exdb/mnist/) (test error %):
+- linear: 12%
+- deskew (preprocess) + linear: 8.5%
+- KNN (L2): 5%
+- deskew (preprocess) + KNN (L2): 2.4%
+- Best CNNs: < 1%
+
+Final runs on test (not that important)
 
 Main other todos:
 - check on logistic regression. does the sigmoid give us anything? if so, how much more
   math & code would it be?
+    - Yes it does. This is worth another section(s).
+    - https://math.stackexchange.com/questions/477207/derivative-of-cost-function-for-logistic-regression
+    - https://sandipanweb.wordpress.com/2017/11/25/some-deep-learning-with-python-tensorflow-and-keras/
+    - https://courses.cs.washington.edu/courses/cse599c1/13wi/slides/l2-regularization-online-perceptron.pdf
 - Anything for updating to new pytorch?
 - Make graphs a bit smaller or combine
+- Balance text, equations, (code), and graphs
